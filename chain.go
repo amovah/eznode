@@ -1,6 +1,7 @@
 package eznode
 
 import (
+	"context"
 	"net/http"
 	"sort"
 	"sync"
@@ -21,17 +22,17 @@ type chain struct {
 	checkTickRate checkTick
 }
 
-func createDecoratedRequest(node *chain, unit *NodeUnit) Requester {
+func createDecoratedRequest(node *chain, unit *NodeUnit) RequestMiddleware {
 	mainRequester := unit.requester
 
-	return func(request *http.Request) (*Response, error) {
+	return func(request *http.Request) *http.Request {
 		node.mutex.Lock()
 		unit.hits += 1
 		node.mutex.Unlock()
 
 		defer func() {
 			go func() {
-				time.Sleep(unit.limitDuration)
+				time.Sleep(unit.limit.duration)
 				node.mutex.Lock()
 				unit.hits -= 1
 				node.mutex.Unlock()
@@ -42,7 +43,7 @@ func createDecoratedRequest(node *chain, unit *NodeUnit) Requester {
 	}
 }
 
-func NewBlockNode(
+func NewChain(
 	initNodes []*NodeUnit,
 	checkTickRate checkTick,
 ) *chain {
@@ -61,10 +62,12 @@ func NewBlockNode(
 	return createdBlockNode
 }
 
-func (b *chain) GetNodeRequester() Requester {
+func (b *chain) getNodeRequester(apiClient apiCaller) Requester {
 	node := b.findNodeWithTimeout()
 	if node != nil {
-		return node.requester
+		return func(request *http.Request) (*Response, error) {
+			return apiClient.doRequest(context.Background(), node.requester(request))
+		}
 	}
 
 	return nil
@@ -110,10 +113,14 @@ func (b *chain) findNode() *NodeUnit {
 	defer b.mutex.RUnlock()
 
 	sort.Slice(b.nodes, func(i, j int) bool {
-		return b.nodes[i].hits < b.nodes[j].hits
+		if b.nodes[i].priority == b.nodes[j].priority {
+			return b.nodes[i].hits < b.nodes[j].hits
+		}
+
+		return b.nodes[i].priority > b.nodes[j].priority
 	})
 	for _, node := range b.nodes {
-		if node.hits < node.limit {
+		if node.hits < node.limit.count {
 			return node
 		}
 	}

@@ -1,6 +1,8 @@
 package eznode
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type EzNode struct {
 	chains    []*chain
@@ -12,7 +14,7 @@ type Option func(*EzNode)
 func NewEzNode(chains []*chain, options ...Option) *EzNode {
 	ezNode := &EzNode{
 		chains: chains,
-		apiCaller: &apiCallerClient{
+		apiCaller: &defaultApiCallClient{
 			client: createHttpClient(),
 		},
 	}
@@ -26,7 +28,7 @@ func NewEzNode(chains []*chain, options ...Option) *EzNode {
 
 func WithClient(client *http.Client) Option {
 	return func(ezNode *EzNode) {
-		ezNode.apiCaller = &apiCallerClient{
+		ezNode.apiCaller = &defaultApiCallClient{
 			client: client,
 		}
 	}
