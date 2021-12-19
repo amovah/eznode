@@ -1,7 +1,6 @@
 package eznode
 
 import (
-	"context"
 	"net/http"
 	"sort"
 	"sync"
@@ -17,13 +16,13 @@ type checkTick struct {
 }
 
 type chain struct {
-	nodes         []*NodeUnit
+	nodes         []*ChainNode
 	mutex         *sync.RWMutex
 	checkTickRate checkTick
 }
 
-func createDecoratedRequest(node *chain, unit *NodeUnit) RequestMiddleware {
-	mainRequester := unit.requester
+func createMiddleware(node *chain, unit *ChainNode) RequestMiddleware {
+	mainMiddleware := unit.middleware
 
 	return func(request *http.Request) *http.Request {
 		node.mutex.Lock()
@@ -32,19 +31,19 @@ func createDecoratedRequest(node *chain, unit *NodeUnit) RequestMiddleware {
 
 		defer func() {
 			go func() {
-				time.Sleep(unit.limit.duration)
+				time.Sleep(unit.limit.per)
 				node.mutex.Lock()
 				unit.hits -= 1
 				node.mutex.Unlock()
 			}()
 		}()
 
-		return mainRequester(request)
+		return mainMiddleware(request)
 	}
 }
 
 func NewChain(
-	initNodes []*NodeUnit,
+	initNodes []*ChainNode,
 	checkTickRate checkTick,
 ) *chain {
 	createdBlockNode := &chain{
@@ -54,7 +53,7 @@ func NewChain(
 
 	nodes := initNodes
 	for _, node := range nodes {
-		node.requester = createDecoratedRequest(createdBlockNode, node)
+		node.middleware = createMiddleware(createdBlockNode, node)
 	}
 
 	createdBlockNode.nodes = nodes
@@ -62,25 +61,18 @@ func NewChain(
 	return createdBlockNode
 }
 
-func (b *chain) getNodeRequester(apiClient apiCaller) Requester {
-	node := b.findNodeWithTimeout()
-	if node != nil {
-		return func(request *http.Request) (*Response, error) {
-			return apiClient.doRequest(context.Background(), node.requester(request))
-		}
-	}
-
-	return nil
+func (c *chain) getNodeRequester() *ChainNode {
+	return c.findNodeWithTimeout()
 }
 
-func (b *chain) findNodeWithTimeout() *NodeUnit {
-	firstLoad := b.findNode()
-	if firstLoad != nil {
-		return firstLoad
+func (c *chain) findNodeWithTimeout() *ChainNode {
+	firstLoadNode := c.findNode()
+	if firstLoadNode != nil {
+		return firstLoadNode
 	}
 
-	ticker := time.NewTicker(b.checkTickRate.tickRate)
-	foundNodeChannel := make(chan *NodeUnit)
+	ticker := time.NewTicker(c.checkTickRate.tickRate)
+	foundNodeChannel := make(chan *ChainNode)
 	tickerDone := make(chan bool)
 	go func() {
 		for {
@@ -89,7 +81,7 @@ func (b *chain) findNodeWithTimeout() *NodeUnit {
 				foundNodeChannel <- nil
 				return
 			case <-ticker.C:
-				foundNode := b.findNode()
+				foundNode := c.findNode()
 				if foundNode != nil {
 					foundNodeChannel <- foundNode
 					return
@@ -99,7 +91,7 @@ func (b *chain) findNodeWithTimeout() *NodeUnit {
 	}()
 
 	go func() {
-		time.Sleep(b.checkTickRate.maxCheckDuration)
+		time.Sleep(c.checkTickRate.maxCheckDuration)
 		ticker.Stop()
 		tickerDone <- true
 	}()
@@ -108,18 +100,18 @@ func (b *chain) findNodeWithTimeout() *NodeUnit {
 	return foundNode
 }
 
-func (b *chain) findNode() *NodeUnit {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
+func (c *chain) findNode() *ChainNode {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
 
-	sort.Slice(b.nodes, func(i, j int) bool {
-		if b.nodes[i].priority == b.nodes[j].priority {
-			return b.nodes[i].hits < b.nodes[j].hits
+	sort.Slice(c.nodes, func(i, j int) bool {
+		if c.nodes[i].priority == c.nodes[j].priority {
+			return c.nodes[i].hits < c.nodes[j].hits
 		}
 
-		return b.nodes[i].priority > b.nodes[j].priority
+		return c.nodes[i].priority > c.nodes[j].priority
 	})
-	for _, node := range b.nodes {
+	for _, node := range c.nodes {
 		if node.hits < node.limit.count {
 			return node
 		}
