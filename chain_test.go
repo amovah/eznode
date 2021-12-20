@@ -9,21 +9,29 @@ import (
 
 func TestFindFreeNode(t *testing.T) {
 	chainNode1 := NewChainNode(ChainNodeData{
-		name:           "Node 1",
-		url:            "http://example.com",
-		limit:          NewChainNodeLimit(10, 2*time.Second),
-		requestTimeout: 1 * time.Second,
-		priority:       1,
-		middleware: func(request *http.Request) *http.Request {
+		Name:           "Node 1",
+		Url:            "http://example.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
 			return request
 		},
 	})
 
 	createdChain := NewChain(
-		[]*ChainNode{
-			chainNode1,
+		ChainData{
+			id: "test chain",
+			initNodes: []*ChainNode{
+				chainNode1,
+			},
+			checkTickRate: CheckTick{
+				TickRate:         100 * time.Millisecond,
+				MaxCheckDuration: 1 * time.Second,
+			},
+			initFailureStatusCodes: []int{},
+			retry:                  2,
 		},
-		NewCheckTick(1*time.Second, 5*time.Second),
 	)
 
 	foundNode := createdChain.getFreeNode()
@@ -36,21 +44,29 @@ func TestFindFreeNode(t *testing.T) {
 
 func TestNotFindNode(t *testing.T) {
 	chainNode1 := NewChainNode(ChainNodeData{
-		name:           "Node 1",
-		url:            "http://example.com",
-		limit:          NewChainNodeLimit(10, 2*time.Second),
-		requestTimeout: 1 * time.Second,
-		priority:       1,
-		middleware: func(request *http.Request) *http.Request {
+		Name:           "Node 1",
+		Url:            "http://example.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
 			return request
 		},
 	})
 
 	createdChain := NewChain(
-		[]*ChainNode{
-			chainNode1,
+		ChainData{
+			id: "test chain",
+			initNodes: []*ChainNode{
+				chainNode1,
+			},
+			checkTickRate: CheckTick{
+				TickRate:         100 * time.Millisecond,
+				MaxCheckDuration: 1 * time.Second,
+			},
+			initFailureStatusCodes: []int{},
+			retry:                  2,
 		},
-		NewCheckTick(500*time.Millisecond, 1*time.Second),
 	)
 
 	chainNode1.hits = 10
@@ -62,33 +78,41 @@ func TestNotFindNode(t *testing.T) {
 
 func TestLoadBalance(t *testing.T) {
 	chainNode1 := NewChainNode(ChainNodeData{
-		name:           "Node 1",
-		url:            "http://example.com",
-		limit:          NewChainNodeLimit(10, 2*time.Second),
-		requestTimeout: 1 * time.Second,
-		priority:       1,
-		middleware: func(request *http.Request) *http.Request {
+		Name:           "Node 1",
+		Url:            "http://example.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
 			return request
 		},
 	})
 
 	chainNode2 := NewChainNode(ChainNodeData{
-		name:           "Node 2",
-		url:            "http://example.com",
-		limit:          NewChainNodeLimit(10, 2*time.Second),
-		requestTimeout: 1 * time.Second,
-		priority:       1,
-		middleware: func(request *http.Request) *http.Request {
+		Name:           "Node 2",
+		Url:            "http://example.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
 			return request
 		},
 	})
 
 	createdChain := NewChain(
-		[]*ChainNode{
-			chainNode1,
-			chainNode2,
+		ChainData{
+			id: "test chain",
+			initNodes: []*ChainNode{
+				chainNode1,
+				chainNode2,
+			},
+			checkTickRate: CheckTick{
+				TickRate:         100 * time.Millisecond,
+				MaxCheckDuration: 1 * time.Second,
+			},
+			initFailureStatusCodes: []int{},
+			retry:                  2,
 		},
-		NewCheckTick(500*time.Millisecond, 1*time.Second),
 	)
 
 	chainNode1.hits = 1

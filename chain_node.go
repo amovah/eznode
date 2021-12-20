@@ -20,35 +20,35 @@ type ChainNode struct {
 }
 
 type ChainNodeData struct {
-	name           string
-	url            string
-	limit          ChainNodeLimit
-	requestTimeout time.Duration
-	priority       uint
-	middleware     RequestMiddleware
+	Name           string
+	Url            string
+	Limit          ChainNodeLimit
+	RequestTimeout time.Duration
+	Priority       uint
+	Middleware     RequestMiddleware
 }
 
 func NewChainNode(
 	chainNodeData ChainNodeData,
 ) *ChainNode {
-	if chainNodeData.name == "" {
+	if chainNodeData.Name == "" {
 		log.Fatal("name cannot be empty")
 	}
 
-	parsedUrl, err := url.Parse(chainNodeData.url)
+	parsedUrl, err := url.Parse(chainNodeData.Url)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if chainNodeData.limit.count <= 0 {
+	if chainNodeData.Limit.count <= 0 {
 		log.Fatal("limit.count cannot be less than 0")
 	}
 
-	if chainNodeData.limit.per <= 0 {
+	if chainNodeData.Limit.per <= 0 {
 		log.Fatal("limit.per cannot be less than 0")
 	}
 
-	if chainNodeData.requestTimeout < 1*time.Second {
+	if chainNodeData.RequestTimeout < 1*time.Second {
 		log.Fatal("requestTimeout cannot be less than 1 second")
 	}
 
@@ -60,17 +60,17 @@ func NewChainNode(
 
 		request.URL = newParsedUrl
 
-		return chainNodeData.middleware(request)
+		return chainNodeData.Middleware(request)
 	}
 
 	return &ChainNode{
 		id:             uuid.New(),
-		name:           chainNodeData.name,
+		name:           chainNodeData.Name,
 		url:            parsedUrl,
-		limit:          chainNodeData.limit,
-		requestTimeout: chainNodeData.requestTimeout,
+		limit:          chainNodeData.Limit,
+		requestTimeout: chainNodeData.RequestTimeout,
 		hits:           0,
-		priority:       chainNodeData.priority,
+		priority:       chainNodeData.Priority,
 		middleware:     middleware,
 	}
 }

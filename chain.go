@@ -11,13 +11,16 @@ import (
 type RequestMiddleware func(*http.Request) *http.Request
 type Requester func(request *http.Request) (*Response, error)
 
-type chain struct {
-	nodes         []*ChainNode
-	mutex         *sync.RWMutex
-	checkTickRate CheckTick
+type Chain struct {
+	id                 string
+	nodes              []*ChainNode
+	mutex              *sync.RWMutex
+	checkTickRate      CheckTick
+	failureStatusCodes map[int]bool
+	retryCount         int
 }
 
-func createMiddleware(node *chain, unit *ChainNode) RequestMiddleware {
+func createMiddleware(node *Chain, unit *ChainNode) RequestMiddleware {
 	mainMiddleware := unit.middleware
 
 	return func(request *http.Request) *http.Request {
@@ -38,40 +41,61 @@ func createMiddleware(node *chain, unit *ChainNode) RequestMiddleware {
 	}
 }
 
+type ChainData struct {
+	id                     string
+	initNodes              []*ChainNode
+	checkTickRate          CheckTick
+	initFailureStatusCodes []int
+	retry                  int
+}
+
 func NewChain(
-	initNodes []*ChainNode,
-	checkTickRate CheckTick,
-) *chain {
-	if checkTickRate.tickRate < 50*time.Millisecond {
+	chainData ChainData,
+) *Chain {
+	if chainData.id == "" {
+		log.Fatal("id cannot be empty")
+	}
+
+	if chainData.checkTickRate.TickRate < 50*time.Millisecond {
 		log.Fatal("tick rate cannot be less than 50 millisecond")
 	}
 
-	if checkTickRate.maxCheckDuration < checkTickRate.tickRate {
+	if chainData.checkTickRate.MaxCheckDuration < chainData.checkTickRate.TickRate {
 		log.Fatal("max check duration must be greater than tick rate")
 	}
 
-	createdBlockNode := &chain{
+	if chainData.retry < 0 {
+		log.Fatal("retry must be greater than -1")
+	}
+
+	failureStatusCodes := make(map[int]bool)
+	for _, statusCode := range chainData.initFailureStatusCodes {
+		failureStatusCodes[statusCode] = true
+	}
+
+	createdChain := &Chain{
+		id:            chainData.id,
 		mutex:         &sync.RWMutex{},
-		checkTickRate: checkTickRate,
+		checkTickRate: chainData.checkTickRate,
 	}
 
-	nodes := initNodes
+	nodes := chainData.initNodes
 	for _, node := range nodes {
-		node.middleware = createMiddleware(createdBlockNode, node)
+		node.middleware = createMiddleware(createdChain, node)
 	}
 
-	createdBlockNode.nodes = nodes
+	createdChain.nodes = nodes
 
-	return createdBlockNode
+	return createdChain
 }
 
-func (c *chain) getFreeNode() *ChainNode {
+func (c *Chain) getFreeNode() *ChainNode {
 	firstLoadNode := c.findNode()
 	if firstLoadNode != nil {
 		return firstLoadNode
 	}
 
-	ticker := time.NewTicker(c.checkTickRate.tickRate)
+	ticker := time.NewTicker(c.checkTickRate.TickRate)
 	foundNodeChannel := make(chan *ChainNode)
 	tickerDone := make(chan bool)
 	go func() {
@@ -91,7 +115,7 @@ func (c *chain) getFreeNode() *ChainNode {
 	}()
 
 	go func() {
-		time.Sleep(c.checkTickRate.maxCheckDuration)
+		time.Sleep(c.checkTickRate.MaxCheckDuration)
 		ticker.Stop()
 		tickerDone <- true
 	}()
@@ -100,7 +124,7 @@ func (c *chain) getFreeNode() *ChainNode {
 	return foundNode
 }
 
-func (c *chain) findNode() *ChainNode {
+func (c *Chain) findNode() *ChainNode {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
