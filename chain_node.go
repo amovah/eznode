@@ -1,22 +1,18 @@
 package eznode
 
 import (
-	"errors"
+	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"net/url"
 	"time"
 )
 
-type NodeUnitLimit struct {
-	count uint
-	per   time.Duration
-}
-
 type ChainNode struct {
+	id             uuid.UUID
 	name           string
 	url            *url.URL
-	limit          NodeUnitLimit
+	limit          ChainNodeLimit
 	requestTimeout time.Duration
 	hits           uint
 	priority       uint
@@ -26,7 +22,7 @@ type ChainNode struct {
 type ChainNodeData struct {
 	name           string
 	url            string
-	limit          NodeUnitLimit
+	limit          ChainNodeLimit
 	requestTimeout time.Duration
 	priority       uint
 	middleware     RequestMiddleware
@@ -34,22 +30,26 @@ type ChainNodeData struct {
 
 func NewChainNode(
 	chainNodeData ChainNodeData,
-) (*ChainNode, error) {
-	if chainNodeData.name != "" {
-		return nil, errors.New("name cannot be empty")
+) *ChainNode {
+	if chainNodeData.name == "" {
+		log.Fatal("name cannot be empty")
 	}
 
 	parsedUrl, err := url.Parse(chainNodeData.url)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
+	}
+
+	if chainNodeData.limit.count <= 0 {
+		log.Fatal("limit.count cannot be less than 0")
 	}
 
 	if chainNodeData.limit.per <= 0 {
-		return nil, errors.New("limit per cannot less and equal than 0")
+		log.Fatal("limit.per cannot be less than 0")
 	}
 
 	if chainNodeData.requestTimeout < 1*time.Second {
-		return nil, errors.New("request timeout cannot be less than 1 second")
+		log.Fatal("requestTimeout cannot be less than 1 second")
 	}
 
 	middleware := func(request *http.Request) *http.Request {
@@ -64,6 +64,7 @@ func NewChainNode(
 	}
 
 	return &ChainNode{
+		id:             uuid.New(),
 		name:           chainNodeData.name,
 		url:            parsedUrl,
 		limit:          chainNodeData.limit,
@@ -71,5 +72,5 @@ func NewChainNode(
 		hits:           0,
 		priority:       chainNodeData.priority,
 		middleware:     middleware,
-	}, nil
+	}
 }

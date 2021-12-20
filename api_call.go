@@ -17,11 +17,11 @@ type apiCaller interface {
 	doRequest(context context.Context, request *http.Request) (*Response, error)
 }
 
-type defaultApiCallClient struct {
+type apiCallerClient struct {
 	client *http.Client
 }
 
-func (d *defaultApiCallClient) doRequest(context context.Context, request *http.Request) (*Response, error) {
+func (a *apiCallerClient) doRequest(context context.Context, request *http.Request) (*Response, error) {
 	responseChannel := make(chan *Response)
 	errorChannel := make(chan error)
 
@@ -29,7 +29,7 @@ func (d *defaultApiCallClient) doRequest(context context.Context, request *http.
 		defer close(errorChannel)
 		defer close(responseChannel)
 
-		res, err := d.requestSlow(request)
+		res, err := a.requestSlow(request)
 		if err != nil {
 			errorChannel <- err
 			return
@@ -48,8 +48,8 @@ func (d *defaultApiCallClient) doRequest(context context.Context, request *http.
 	}
 }
 
-func (d *defaultApiCallClient) requestSlow(request *http.Request) (*Response, error) {
-	res, err := d.client.Do(request)
+func (a *apiCallerClient) requestSlow(request *http.Request) (*Response, error) {
+	res, err := a.client.Do(request)
 	if err != nil {
 		return nil, err
 	}

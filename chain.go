@@ -1,6 +1,7 @@
 package eznode
 
 import (
+	"log"
 	"net/http"
 	"sort"
 	"sync"
@@ -10,15 +11,10 @@ import (
 type RequestMiddleware func(*http.Request) *http.Request
 type Requester func(request *http.Request) (*Response, error)
 
-type checkTick struct {
-	tickRate         time.Duration
-	maxCheckDuration time.Duration
-}
-
 type chain struct {
 	nodes         []*ChainNode
 	mutex         *sync.RWMutex
-	checkTickRate checkTick
+	checkTickRate CheckTick
 }
 
 func createMiddleware(node *chain, unit *ChainNode) RequestMiddleware {
@@ -44,8 +40,16 @@ func createMiddleware(node *chain, unit *ChainNode) RequestMiddleware {
 
 func NewChain(
 	initNodes []*ChainNode,
-	checkTickRate checkTick,
+	checkTickRate CheckTick,
 ) *chain {
+	if checkTickRate.tickRate < 50*time.Millisecond {
+		log.Fatal("tick rate cannot be less than 50 millisecond")
+	}
+
+	if checkTickRate.maxCheckDuration < checkTickRate.tickRate {
+		log.Fatal("max check duration must be greater than tick rate")
+	}
+
 	createdBlockNode := &chain{
 		mutex:         &sync.RWMutex{},
 		checkTickRate: checkTickRate,
@@ -61,11 +65,7 @@ func NewChain(
 	return createdBlockNode
 }
 
-func (c *chain) getNodeRequester() *ChainNode {
-	return c.findNodeWithTimeout()
-}
-
-func (c *chain) findNodeWithTimeout() *ChainNode {
+func (c *chain) getFreeNode() *ChainNode {
 	firstLoadNode := c.findNode()
 	if firstLoadNode != nil {
 		return firstLoadNode

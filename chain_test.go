@@ -1,32 +1,32 @@
 package eznode
 
 import (
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
 	"time"
 )
 
 func TestNewChain(t *testing.T) {
-	chain := NewChain(
+	chainNode1 := NewChainNode(ChainNodeData{
+		name:           "Node 1",
+		url:            "http://example.com",
+		limit:          NewChainNodeLimit(10, 2*time.Second),
+		requestTimeout: 1 * time.Second,
+		priority:       1,
+		middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	createdChain := NewChain(
 		[]*ChainNode{
-			newChainNode(
-				"http://example.com",
-				NodeUnitLimit{
-					count: 25,
-					per:   5 * time.Second,
-				},
-				2*time.Second,
-				2,
-				func(request *http.Request) *http.Request {
-					return request
-				},
-			),
+			chainNode1,
 		},
-		CheckTick{
-			tickRate:         1 * time.Second,
-			maxCheckDuration: 5 * time.Second,
-		},
+		NewCheckTick(1*time.Second, 5*time.Second),
 	)
 
-	chain.getFreeNode()
+	foundNode := createdChain.getFreeNode()
+
+	assert.Equal(t, chainNode1.id, foundNode.id)
 }

@@ -14,7 +14,7 @@ type Option func(*EzNode)
 func NewEzNode(chains []*chain, options ...Option) *EzNode {
 	ezNode := &EzNode{
 		chains: chains,
-		apiCaller: &defaultApiCallClient{
+		apiCaller: &apiCallerClient{
 			client: createHttpClient(),
 		},
 	}
@@ -28,7 +28,7 @@ func NewEzNode(chains []*chain, options ...Option) *EzNode {
 
 func WithClient(client *http.Client) Option {
 	return func(ezNode *EzNode) {
-		ezNode.apiCaller = &defaultApiCallClient{
+		ezNode.apiCaller = &apiCallerClient{
 			client: client,
 		}
 	}
