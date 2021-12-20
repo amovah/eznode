@@ -12,10 +12,6 @@ type EzNode struct {
 	apiCaller apiCaller
 }
 
-func isResponseValid(failureStatusCodes map[int]bool, res *Response, err error) bool {
-	return err == nil && !(failureStatusCodes[res.statusCode])
-}
-
 func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, error) {
 	selectedChain := e.chains[chainId]
 	if selectedChain == nil {
@@ -46,6 +42,10 @@ func (e *EzNode) tryRequest(selectedChain *Chain, request *http.Request, tryCoun
 	}
 
 	return e.tryRequest(selectedChain, request, tryCount+1)
+}
+
+func isResponseValid(failureStatusCodes map[int]bool, res *Response, err error) bool {
+	return err == nil && !(failureStatusCodes[res.statusCode])
 }
 
 type Option func(*EzNode)
