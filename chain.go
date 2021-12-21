@@ -9,7 +9,6 @@ import (
 )
 
 type RequestMiddleware func(*http.Request) *http.Request
-type Requester func(request *http.Request) (*Response, error)
 
 type Chain struct {
 	id                 string
@@ -42,11 +41,11 @@ func createMiddleware(node *Chain, unit *ChainNode) RequestMiddleware {
 }
 
 type ChainData struct {
-	id                     string
-	initNodes              []*ChainNode
-	checkTickRate          CheckTick
-	initFailureStatusCodes []int
-	retry                  int
+	id                 string
+	nodes              []*ChainNode
+	checkTickRate      CheckTick
+	failureStatusCodes []int
+	retry              int
 }
 
 func NewChain(
@@ -69,7 +68,7 @@ func NewChain(
 	}
 
 	failureStatusCodes := make(map[int]bool)
-	for _, statusCode := range chainData.initFailureStatusCodes {
+	for _, statusCode := range chainData.failureStatusCodes {
 		failureStatusCodes[statusCode] = true
 	}
 
@@ -79,7 +78,7 @@ func NewChain(
 		checkTickRate: chainData.checkTickRate,
 	}
 
-	nodes := chainData.initNodes
+	nodes := chainData.nodes
 	for _, node := range nodes {
 		node.middleware = createMiddleware(createdChain, node)
 	}

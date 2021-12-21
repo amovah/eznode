@@ -22,15 +22,15 @@ func TestFindFreeNode(t *testing.T) {
 	createdChain := NewChain(
 		ChainData{
 			id: "test chain",
-			initNodes: []*ChainNode{
+			nodes: []*ChainNode{
 				chainNode1,
 			},
 			checkTickRate: CheckTick{
 				TickRate:         100 * time.Millisecond,
 				MaxCheckDuration: 1 * time.Second,
 			},
-			initFailureStatusCodes: []int{},
-			retry:                  2,
+			failureStatusCodes: []int{},
+			retry:              2,
 		},
 	)
 
@@ -57,15 +57,15 @@ func TestNotFindNode(t *testing.T) {
 	createdChain := NewChain(
 		ChainData{
 			id: "test chain",
-			initNodes: []*ChainNode{
+			nodes: []*ChainNode{
 				chainNode1,
 			},
 			checkTickRate: CheckTick{
 				TickRate:         100 * time.Millisecond,
 				MaxCheckDuration: 1 * time.Second,
 			},
-			initFailureStatusCodes: []int{},
-			retry:                  2,
+			failureStatusCodes: []int{},
+			retry:              2,
 		},
 	)
 
@@ -102,7 +102,7 @@ func TestLoadBalance(t *testing.T) {
 	createdChain := NewChain(
 		ChainData{
 			id: "test chain",
-			initNodes: []*ChainNode{
+			nodes: []*ChainNode{
 				chainNode1,
 				chainNode2,
 			},
@@ -110,8 +110,8 @@ func TestLoadBalance(t *testing.T) {
 				TickRate:         100 * time.Millisecond,
 				MaxCheckDuration: 1 * time.Second,
 			},
-			initFailureStatusCodes: []int{},
-			retry:                  2,
+			failureStatusCodes: []int{},
+			retry:              2,
 		},
 	)
 
