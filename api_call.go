@@ -11,6 +11,7 @@ type Response struct {
 	StatusCode int
 	Body       []byte
 	Headers    *http.Header
+	Metadata   ChainResponseMetadata
 }
 
 type ApiCaller interface {

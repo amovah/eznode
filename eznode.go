@@ -26,7 +26,16 @@ func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, 
 func (e *EzNode) tryRequest(selectedChain *Chain, request *http.Request, tryCount int, excludeNodes map[uuid.UUID]bool) (*Response, error) {
 	selectedNode := selectedChain.getFreeNode(excludeNodes)
 	if selectedNode == nil {
-		return nil, errors.New(fmt.Sprintf("chain id %s is at full capacity", selectedChain.id))
+		return nil, EzNodeError{
+			Message: fmt.Sprintf("chain id = %s is at full capacity", selectedChain.id),
+			Metadata: ChainResponseMetadata{
+				chainId:      selectedChain.id,
+				nodeName:     "",
+				nodeId:       uuid.UUID{},
+				requestedUrl: request.URL.String(),
+				retries:      tryCount,
+			},
+		}
 	}
 
 	createdRequest := selectedNode.middleware(request.Clone(context.Background()))
@@ -34,12 +43,24 @@ func (e *EzNode) tryRequest(selectedChain *Chain, request *http.Request, tryCoun
 	defer cancelTimeout()
 
 	res, err := e.apiCaller.doRequest(ctx, createdRequest)
-	if isResponseValid(selectedChain.failureStatusCodes, res, err) {
-		return res, err
-	}
+	if isResponseValid(selectedChain.failureStatusCodes, res, err) || tryCount >= selectedChain.retryCount {
+		metadata := ChainResponseMetadata{
+			chainId:      selectedChain.id,
+			nodeName:     selectedNode.name,
+			nodeId:       selectedNode.id,
+			requestedUrl: request.URL.String(),
+			retries:      tryCount,
+		}
 
-	if tryCount >= selectedChain.retryCount {
-		return res, err
+		if err != nil {
+			return res, EzNodeError{
+				Message:  err.Error(),
+				Metadata: metadata,
+			}
+		}
+
+		res.Metadata = metadata
+		return res, nil
 	}
 
 	excludeNodes[selectedNode.id] = true
