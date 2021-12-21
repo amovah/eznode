@@ -1,5 +1,7 @@
 package eznode
 
+import "github.com/google/uuid"
+
 type ChainResponseMetadata struct {
 	ChainId      string
 	RequestedUrl string
@@ -9,6 +11,6 @@ type ChainResponseMetadata struct {
 
 type NodeErrorTrace struct {
 	NodeName string
-	NodeId   string
+	NodeId   uuid.UUID
 	Err      error
 }

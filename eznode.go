@@ -40,9 +40,7 @@ func (e *EzNode) tryRequest(
 				RequestedUrl: request.URL.String(),
 				Retry:        tryCount,
 				ErrorTrace: append(errorTrace, NodeErrorTrace{
-					NodeName: "",
-					NodeId:   "",
-					Err:      errors.New(fmt.Sprintf("'%s' is at full capacity", selectedChain.id)),
+					Err: errors.New(fmt.Sprintf("'%s' is at full capacity", selectedChain.id)),
 				}),
 			},
 		}
@@ -59,9 +57,9 @@ func (e *EzNode) tryRequest(
 			RequestedUrl: request.URL.String(),
 			Retry:        tryCount,
 			ErrorTrace: append(errorTrace, NodeErrorTrace{
-				NodeName: "",
-				NodeId:   "",
-				Err:      errors.New(fmt.Sprintf("chain id = %s is at full capacity", selectedChain.id)),
+				NodeName: selectedNode.name,
+				NodeId:   selectedNode.id,
+				Err:      err,
 			}),
 		}
 
