@@ -8,12 +8,12 @@ import (
 )
 
 type Response struct {
-	statusCode int
-	body       []byte
-	headers    *http.Header
+	StatusCode int
+	Body       []byte
+	Headers    *http.Header
 }
 
-type apiCaller interface {
+type ApiCaller interface {
 	doRequest(context context.Context, request *http.Request) (*Response, error)
 }
 
@@ -61,9 +61,9 @@ func (a *apiCallerClient) requestSlow(request *http.Request) (*Response, error) 
 	defer res.Body.Close()
 
 	response := &Response{
-		statusCode: res.StatusCode,
-		body:       resBody,
-		headers:    &res.Header,
+		StatusCode: res.StatusCode,
+		Body:       resBody,
+		Headers:    &res.Header,
 	}
 
 	return response, nil

@@ -9,7 +9,7 @@ import (
 
 type EzNode struct {
 	chains    map[string]*Chain
-	apiCaller apiCaller
+	apiCaller ApiCaller
 }
 
 func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, error) {
@@ -28,7 +28,6 @@ func (e *EzNode) tryRequest(selectedChain *Chain, request *http.Request, tryCoun
 	}
 
 	createdRequest := selectedNode.middleware(request.Clone(context.Background()))
-
 	ctx, cancelTimeout := context.WithTimeout(context.Background(), selectedNode.requestTimeout)
 	defer cancelTimeout()
 
@@ -45,7 +44,7 @@ func (e *EzNode) tryRequest(selectedChain *Chain, request *http.Request, tryCoun
 }
 
 func isResponseValid(failureStatusCodes map[int]bool, res *Response, err error) bool {
-	return err == nil && !(failureStatusCodes[res.statusCode])
+	return err == nil && !(failureStatusCodes[res.StatusCode])
 }
 
 type Option func(*EzNode)
@@ -70,10 +69,8 @@ func NewEzNode(chains []*Chain, options ...Option) *EzNode {
 	return ezNode
 }
 
-func WithClient(client *http.Client) Option {
+func WithApiClient(apiCaller ApiCaller) Option {
 	return func(ezNode *EzNode) {
-		ezNode.apiCaller = &apiCallerClient{
-			client: client,
-		}
+		ezNode.apiCaller = apiCaller
 	}
 }

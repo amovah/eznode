@@ -21,16 +21,16 @@ func TestFindFreeNode(t *testing.T) {
 
 	createdChain := NewChain(
 		ChainData{
-			id: "test chain",
-			nodes: []*ChainNode{
+			Id: "test chain",
+			Nodes: []*ChainNode{
 				chainNode1,
 			},
-			checkTickRate: CheckTick{
+			CheckTickRate: CheckTick{
 				TickRate:         100 * time.Millisecond,
 				MaxCheckDuration: 1 * time.Second,
 			},
-			failureStatusCodes: []int{},
-			retry:              2,
+			FailureStatusCodes: []int{},
+			RetryCount:         2,
 		},
 	)
 
@@ -56,16 +56,16 @@ func TestNotFindNode(t *testing.T) {
 
 	createdChain := NewChain(
 		ChainData{
-			id: "test chain",
-			nodes: []*ChainNode{
+			Id: "test-chain",
+			Nodes: []*ChainNode{
 				chainNode1,
 			},
-			checkTickRate: CheckTick{
+			CheckTickRate: CheckTick{
 				TickRate:         100 * time.Millisecond,
 				MaxCheckDuration: 1 * time.Second,
 			},
-			failureStatusCodes: []int{},
-			retry:              2,
+			FailureStatusCodes: []int{},
+			RetryCount:         2,
 		},
 	)
 
@@ -101,17 +101,17 @@ func TestLoadBalance(t *testing.T) {
 
 	createdChain := NewChain(
 		ChainData{
-			id: "test chain",
-			nodes: []*ChainNode{
+			Id: "test chain",
+			Nodes: []*ChainNode{
 				chainNode1,
 				chainNode2,
 			},
-			checkTickRate: CheckTick{
+			CheckTickRate: CheckTick{
 				TickRate:         100 * time.Millisecond,
 				MaxCheckDuration: 1 * time.Second,
 			},
-			failureStatusCodes: []int{},
-			retry:              2,
+			FailureStatusCodes: []int{},
+			RetryCount:         2,
 		},
 	)
 

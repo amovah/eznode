@@ -41,44 +41,46 @@ func createMiddleware(node *Chain, unit *ChainNode) RequestMiddleware {
 }
 
 type ChainData struct {
-	id                 string
-	nodes              []*ChainNode
-	checkTickRate      CheckTick
-	failureStatusCodes []int
-	retry              int
+	Id                 string
+	Nodes              []*ChainNode
+	CheckTickRate      CheckTick
+	FailureStatusCodes []int
+	RetryCount         int
 }
 
 func NewChain(
 	chainData ChainData,
 ) *Chain {
-	if chainData.id == "" {
+	if chainData.Id == "" {
 		log.Fatal("id cannot be empty")
 	}
 
-	if chainData.checkTickRate.TickRate < 50*time.Millisecond {
+	if chainData.CheckTickRate.TickRate < 50*time.Millisecond {
 		log.Fatal("tick rate cannot be less than 50 millisecond")
 	}
 
-	if chainData.checkTickRate.MaxCheckDuration < chainData.checkTickRate.TickRate {
+	if chainData.CheckTickRate.MaxCheckDuration < chainData.CheckTickRate.TickRate {
 		log.Fatal("max check duration must be greater than tick rate")
 	}
 
-	if chainData.retry < 0 {
+	if chainData.RetryCount < 0 {
 		log.Fatal("retry must be greater than -1")
 	}
 
 	failureStatusCodes := make(map[int]bool)
-	for _, statusCode := range chainData.failureStatusCodes {
+	for _, statusCode := range chainData.FailureStatusCodes {
 		failureStatusCodes[statusCode] = true
 	}
 
 	createdChain := &Chain{
-		id:            chainData.id,
-		mutex:         &sync.RWMutex{},
-		checkTickRate: chainData.checkTickRate,
+		id:                 chainData.Id,
+		mutex:              &sync.RWMutex{},
+		checkTickRate:      chainData.CheckTickRate,
+		failureStatusCodes: failureStatusCodes,
+		retryCount:         chainData.RetryCount,
 	}
 
-	nodes := chainData.nodes
+	nodes := chainData.Nodes
 	for _, node := range nodes {
 		node.middleware = createMiddleware(createdChain, node)
 	}
