@@ -68,9 +68,10 @@ func TestCallRightRequest(t *testing.T) {
 	ezNode.SendRequest("test-chain", request)
 }
 
-func TestRetryMode(t *testing.T) {
+func TestRetry(t *testing.T) {
 	retryCount := 0
-	chainMaxTry := 5
+	chainMaxTry := 2
+	seenUrls := make(map[string]bool)
 
 	mockedApiCall := mockApiCall{
 		t: t,
@@ -79,6 +80,9 @@ func TestRetryMode(t *testing.T) {
 			return &Response{}, errors.New("error")
 		},
 		validateFunc: func(request *http.Request) {
+			if seenUrls[request.URL.String()] {
+				assert.Fail(t, "url seen already")
+			}
 		},
 	}
 
@@ -93,11 +97,35 @@ func TestRetryMode(t *testing.T) {
 		},
 	})
 
+	chainNode2 := NewChainNode(ChainNodeData{
+		Name:           "Node 2",
+		Url:            "http://example2.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	chainNode3 := NewChainNode(ChainNodeData{
+		Name:           "Node 3",
+		Url:            "http://example3.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
 	createdChain := NewChain(
 		ChainData{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
+				chainNode2,
+				chainNode3,
 			},
 			CheckTickRate: CheckTick{
 				TickRate:         500 * time.Millisecond,
@@ -115,6 +143,80 @@ func TestRetryMode(t *testing.T) {
 }
 
 func TestFailOnFailureStatusCodes(t *testing.T) {
+	retryCount := 0
+	chainMaxTry := 2
+
+	mockedApiCall := mockApiCall{
+		t: t,
+		returnFunc: func(request *http.Request) (*Response, error) {
+			retryCount += 1
+			return &Response{
+				StatusCode: http.StatusNotFound,
+				Body:       nil,
+				Headers:    nil,
+			}, nil
+		},
+		validateFunc: func(request *http.Request) {
+		},
+	}
+
+	chainNode1 := NewChainNode(ChainNodeData{
+		Name:           "Node 1",
+		Url:            "http://example.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	chainNode2 := NewChainNode(ChainNodeData{
+		Name:           "Node 2",
+		Url:            "http://example2.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	chainNode3 := NewChainNode(ChainNodeData{
+		Name:           "Node 3",
+		Url:            "http://example3.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	createdChain := NewChain(
+		ChainData{
+			Id: "test-chain",
+			Nodes: []*ChainNode{
+				chainNode1,
+				chainNode2,
+				chainNode3,
+			},
+			CheckTickRate: CheckTick{
+				TickRate:         500 * time.Millisecond,
+				MaxCheckDuration: 1 * time.Second,
+			},
+			FailureStatusCodes: []int{http.StatusNotFound},
+			RetryCount:         chainMaxTry,
+		},
+	)
+
+	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
+	request, _ := http.NewRequest("GET", "/", nil)
+	ezNode.SendRequest("test-chain", request)
+	assert.Equal(t, chainMaxTry+1, retryCount)
+}
+
+func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 	retryCount := 0
 	chainMaxTry := 5
 
@@ -143,11 +245,35 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 		},
 	})
 
+	chainNode2 := NewChainNode(ChainNodeData{
+		Name:           "Node 2",
+		Url:            "http://example2.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	chainNode3 := NewChainNode(ChainNodeData{
+		Name:           "Node 3",
+		Url:            "http://example3.com",
+		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
 	createdChain := NewChain(
 		ChainData{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
+				chainNode2,
+				chainNode3,
 			},
 			CheckTickRate: CheckTick{
 				TickRate:         500 * time.Millisecond,
@@ -161,5 +287,5 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 	request, _ := http.NewRequest("GET", "/", nil)
 	ezNode.SendRequest("test-chain", request)
-	assert.Equal(t, chainMaxTry+1, retryCount)
+	assert.Equal(t, 3, retryCount)
 }

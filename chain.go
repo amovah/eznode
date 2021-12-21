@@ -1,6 +1,7 @@
 package eznode
 
 import (
+	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"sort"
@@ -90,8 +91,12 @@ func NewChain(
 	return createdChain
 }
 
-func (c *Chain) getFreeNode() *ChainNode {
-	firstLoadNode := c.findNode()
+func (c *Chain) getFreeNode(excludeNodes map[uuid.UUID]bool) *ChainNode {
+	if len(excludeNodes) == len(c.nodes) {
+		return nil
+	}
+
+	firstLoadNode := c.findNode(excludeNodes)
 	if firstLoadNode != nil {
 		return firstLoadNode
 	}
@@ -106,7 +111,7 @@ func (c *Chain) getFreeNode() *ChainNode {
 				foundNodeChannel <- nil
 				return
 			case <-ticker.C:
-				foundNode := c.findNode()
+				foundNode := c.findNode(excludeNodes)
 				if foundNode != nil {
 					foundNodeChannel <- foundNode
 					return
@@ -125,7 +130,7 @@ func (c *Chain) getFreeNode() *ChainNode {
 	return foundNode
 }
 
-func (c *Chain) findNode() *ChainNode {
+func (c *Chain) findNode(excludeNodes map[uuid.UUID]bool) *ChainNode {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
@@ -137,7 +142,7 @@ func (c *Chain) findNode() *ChainNode {
 		return c.nodes[i].priority > c.nodes[j].priority
 	})
 	for _, node := range c.nodes {
-		if node.hits < node.limit.count {
+		if node.hits < node.limit.count && !excludeNodes[node.id] {
 			return node
 		}
 	}

@@ -1,6 +1,7 @@
 package eznode
 
 import (
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
@@ -34,7 +35,7 @@ func TestFindFreeNode(t *testing.T) {
 		},
 	)
 
-	foundNode := createdChain.getFreeNode()
+	foundNode := createdChain.getFreeNode(make(map[uuid.UUID]bool))
 
 	assert.NotNil(t, foundNode, "should find node")
 	if foundNode != nil {
@@ -71,7 +72,7 @@ func TestNotFindNode(t *testing.T) {
 
 	chainNode1.hits = 10
 
-	foundNode := createdChain.getFreeNode()
+	foundNode := createdChain.getFreeNode(make(map[uuid.UUID]bool))
 
 	assert.Nil(t, foundNode, "should not find node")
 }
@@ -116,11 +117,11 @@ func TestLoadBalance(t *testing.T) {
 	)
 
 	chainNode1.hits = 1
-	foundNode := createdChain.getFreeNode()
+	foundNode := createdChain.getFreeNode(make(map[uuid.UUID]bool))
 	assert.Equal(t, chainNode2.id, foundNode.id, "should route to node 2")
 
 	chainNode2.hits = 3
 	chainNode1.hits = 2
-	foundNode = createdChain.getFreeNode()
+	foundNode = createdChain.getFreeNode(make(map[uuid.UUID]bool))
 	assert.Equal(t, chainNode1.id, foundNode.id, "should route to node 1")
 }
