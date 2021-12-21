@@ -20,20 +20,30 @@ func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, 
 	}
 
 	excludeNodes := make(map[uuid.UUID]bool)
-	return e.tryRequest(selectedChain, request, 0, excludeNodes)
+	errorTrace := make([]NodeErrorTrace, 0)
+	return e.tryRequest(selectedChain, request, 0, excludeNodes, errorTrace)
 }
 
-func (e *EzNode) tryRequest(selectedChain *Chain, request *http.Request, tryCount int, excludeNodes map[uuid.UUID]bool) (*Response, error) {
+func (e *EzNode) tryRequest(
+	selectedChain *Chain,
+	request *http.Request,
+	tryCount int,
+	excludeNodes map[uuid.UUID]bool,
+	errorTrace []NodeErrorTrace,
+) (*Response, error) {
 	selectedNode := selectedChain.getFreeNode(excludeNodes)
 	if selectedNode == nil {
 		return nil, EzNodeError{
-			Message: fmt.Sprintf("chain id = %s is at full capacity", selectedChain.id),
+			Message: fmt.Sprintf("'%s' is at full capacity", selectedChain.id),
 			Metadata: ChainResponseMetadata{
-				chainId:      selectedChain.id,
-				nodeName:     "",
-				nodeId:       uuid.UUID{},
-				requestedUrl: request.URL.String(),
-				retries:      tryCount,
+				ChainId:      selectedChain.id,
+				RequestedUrl: request.URL.String(),
+				Retry:        tryCount,
+				ErrorTrace: append(errorTrace, NodeErrorTrace{
+					NodeName: "",
+					NodeId:   "",
+					Err:      errors.New(fmt.Sprintf("'%s' is at full capacity", selectedChain.id)),
+				}),
 			},
 		}
 	}
@@ -45,11 +55,14 @@ func (e *EzNode) tryRequest(selectedChain *Chain, request *http.Request, tryCoun
 	res, err := e.apiCaller.doRequest(ctx, createdRequest)
 	if isResponseValid(selectedChain.failureStatusCodes, res, err) || tryCount >= selectedChain.retryCount {
 		metadata := ChainResponseMetadata{
-			chainId:      selectedChain.id,
-			nodeName:     selectedNode.name,
-			nodeId:       selectedNode.id,
-			requestedUrl: request.URL.String(),
-			retries:      tryCount,
+			ChainId:      selectedChain.id,
+			RequestedUrl: request.URL.String(),
+			Retry:        tryCount,
+			ErrorTrace: append(errorTrace, NodeErrorTrace{
+				NodeName: "",
+				NodeId:   "",
+				Err:      errors.New(fmt.Sprintf("chain id = %s is at full capacity", selectedChain.id)),
+			}),
 		}
 
 		if err != nil {
@@ -64,7 +77,7 @@ func (e *EzNode) tryRequest(selectedChain *Chain, request *http.Request, tryCoun
 	}
 
 	excludeNodes[selectedNode.id] = true
-	return e.tryRequest(selectedChain, request, tryCount+1, excludeNodes)
+	return e.tryRequest(selectedChain, request, tryCount+1, excludeNodes, errorTrace)
 }
 
 func isResponseValid(failureStatusCodes map[int]bool, res *Response, err error) bool {

@@ -10,11 +10,9 @@ type EzNodeError struct {
 func (e EzNodeError) Error() string {
 	if e.Message == "" {
 		return fmt.Sprintf(
-			"failed, node id = %s, node name = %s, chain id = %s, requested url %s",
-			e.Metadata.nodeId,
-			e.Metadata.nodeName,
-			e.Metadata.chainId,
-			e.Metadata.requestedUrl,
+			"failed. chain id = %s, requested url %s",
+			e.Metadata.ChainId,
+			e.Metadata.RequestedUrl,
 		)
 	}
 
