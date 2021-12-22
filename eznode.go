@@ -73,7 +73,7 @@ func (e *EzNode) tryRequest(
 		errorTrace = append(errorTrace, NodeErrorTrace{
 			NodeName: selectedNode.name,
 			NodeId:   selectedNode.id,
-			Err:      errors.New(fmt.Sprintf("request failed with status code %s", res.StatusCode)),
+			Err:      errors.New(fmt.Sprintf("request failed with status code %v", res.StatusCode)),
 		})
 	}
 
