@@ -314,55 +314,6 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 	assert.Equal(t, 3, retryCount)
 }
 
-func TestReturnErrorType(t *testing.T) {
-	mockedApiCall := mockApiCall{
-		returnFunc: func(request *http.Request) (*Response, error) {
-			return nil, errors.New("test error")
-		},
-		validateFunc: func(request *http.Request) {
-			assert.Equal(t, "http://example.com/", request.URL.String())
-			assert.Equal(t, "GET", request.Method)
-		},
-	}
-
-	chainNode1 := NewChainNode(ChainNodeData{
-		Name: "Node 1",
-		Url:  "http://example.com",
-		Limit: ChainNodeLimit{
-			Count: 10,
-			Per:   2 * time.Second,
-		},
-		RequestTimeout: 1 * time.Second,
-		Priority:       1,
-		Middleware: func(request *http.Request) *http.Request {
-			return request
-		},
-	})
-
-	createdChain := NewChain(
-		ChainData{
-			Id: "test-chain",
-			Nodes: []*ChainNode{
-				chainNode1,
-			},
-			CheckTickRate: CheckTick{
-				TickRate:         100 * time.Millisecond,
-				MaxCheckDuration: 1 * time.Second,
-			},
-			FailureStatusCodes: []int{},
-			RetryCount:         2,
-		},
-	)
-
-	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
-	request, _ := http.NewRequest("GET", "/", nil)
-	_, err := ezNode.SendRequest("test-chain", request)
-	_, ok := err.(EzNodeError)
-	if !ok {
-		assert.Fail(t, "error must be type of EzNodeError")
-	}
-}
-
 func TestLockAndReleaseResource(t *testing.T) {
 	mockedApiCall := mockApiCall{
 		returnFunc: func(request *http.Request) (*Response, error) {
