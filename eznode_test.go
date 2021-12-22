@@ -362,3 +362,61 @@ func TestReturnErrorType(t *testing.T) {
 		assert.Fail(t, "error must be type of EzNodeError")
 	}
 }
+
+func TestLockAndReleaseResource(t *testing.T) {
+	mockedApiCall := mockApiCall{
+		returnFunc: func(request *http.Request) (*Response, error) {
+			return &Response{
+				StatusCode: 200,
+				Body:       nil,
+				Headers:    &http.Header{},
+			}, nil
+		},
+		validateFunc: func(request *http.Request) {
+		},
+	}
+
+	chainNode1 := NewChainNode(ChainNodeData{
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 1,
+			Per:   2 * time.Second,
+		},
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	createdChain := NewChain(
+		ChainData{
+			Id: "test-chain",
+			Nodes: []*ChainNode{
+				chainNode1,
+			},
+			CheckTickRate: CheckTick{
+				TickRate:         100 * time.Millisecond,
+				MaxCheckDuration: 200 * time.Millisecond,
+			},
+			FailureStatusCodes: []int{},
+			RetryCount:         2,
+		},
+	)
+
+	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
+
+	request, _ := http.NewRequest("GET", "/", nil)
+	res, err := ezNode.SendRequest("test-chain", request)
+	assert.Nil(t, err)
+	assert.Equal(t, 200, res.StatusCode)
+
+	res, err = ezNode.SendRequest("test-chain", request)
+	assert.NotNil(t, err)
+
+	time.Sleep(2 * time.Second)
+	res, err = ezNode.SendRequest("test-chain", request)
+	assert.Nil(t, err)
+	assert.Equal(t, 200, res.StatusCode)
+}
