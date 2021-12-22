@@ -10,7 +10,8 @@ type ChainResponseMetadata struct {
 }
 
 type NodeErrorTrace struct {
-	NodeName string
-	NodeId   uuid.UUID
-	Err      error
+	NodeName   string
+	NodeId     uuid.UUID
+	StatusCode int
+	Err        error
 }

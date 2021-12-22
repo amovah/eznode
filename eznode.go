@@ -16,7 +16,7 @@ type EzNode struct {
 func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, error) {
 	selectedChain := e.chains[chainId]
 	if selectedChain == nil {
-		return nil, errors.New(fmt.Sprintf("cannot find a chain with id %s", chainId))
+		return nil, errors.New(fmt.Sprintf("cannot find chain id %s", chainId))
 	}
 
 	excludeNodes := make(map[uuid.UUID]bool)
@@ -33,7 +33,7 @@ func (e *EzNode) tryRequest(
 ) (*Response, error) {
 	selectedNode := selectedChain.getFreeNode(excludeNodes)
 	if selectedNode == nil {
-		errorMessage := fmt.Sprintf("'%s' is at full capacity", selectedChain.id)
+		errorMessage := fmt.Sprintf("'%s' chain is at full capacity", selectedChain.id)
 		return nil, EzNodeError{
 			Message: errorMessage,
 			Metadata: ChainResponseMetadata{
@@ -41,7 +41,8 @@ func (e *EzNode) tryRequest(
 				RequestedUrl: request.URL.String(),
 				Retry:        tryCount,
 				ErrorTrace: append(errorTrace, NodeErrorTrace{
-					Err: errors.New(errorMessage),
+					StatusCode: http.StatusTooManyRequests,
+					Err:        errors.New(errorMessage),
 				}),
 			},
 		}
@@ -71,9 +72,10 @@ func (e *EzNode) tryRequest(
 		})
 	} else {
 		errorTrace = append(errorTrace, NodeErrorTrace{
-			NodeName: selectedNode.name,
-			NodeId:   selectedNode.id,
-			Err:      errors.New(fmt.Sprintf("request failed with status code %v", res.StatusCode)),
+			NodeName:   selectedNode.name,
+			NodeId:     selectedNode.id,
+			StatusCode: res.StatusCode,
+			Err:        errors.New(fmt.Sprintf("request failed with status code %v", res.StatusCode)),
 		})
 	}
 
