@@ -35,9 +35,12 @@ func TestCallRightRequest(t *testing.T) {
 	}
 
 	chainNode1 := NewChainNode(ChainNodeData{
-		Name:           "Node 1",
-		Url:            "http://example.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -83,9 +86,12 @@ func TestRetry(t *testing.T) {
 	}
 
 	chainNode1 := NewChainNode(ChainNodeData{
-		Name:           "Node 1",
-		Url:            "http://example.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -94,9 +100,12 @@ func TestRetry(t *testing.T) {
 	})
 
 	chainNode2 := NewChainNode(ChainNodeData{
-		Name:           "Node 2",
-		Url:            "http://example2.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 2",
+		Url:  "http://example2.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -105,9 +114,12 @@ func TestRetry(t *testing.T) {
 	})
 
 	chainNode3 := NewChainNode(ChainNodeData{
-		Name:           "Node 3",
-		Url:            "http://example3.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 3",
+		Url:  "http://example3.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -156,9 +168,12 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 	}
 
 	chainNode1 := NewChainNode(ChainNodeData{
-		Name:           "Node 1",
-		Url:            "http://example.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -167,9 +182,12 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 	})
 
 	chainNode2 := NewChainNode(ChainNodeData{
-		Name:           "Node 2",
-		Url:            "http://example2.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 2",
+		Url:  "http://example2.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -178,9 +196,12 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 	})
 
 	chainNode3 := NewChainNode(ChainNodeData{
-		Name:           "Node 3",
-		Url:            "http://example3.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 3",
+		Url:  "http://example3.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -229,9 +250,12 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 	}
 
 	chainNode1 := NewChainNode(ChainNodeData{
-		Name:           "Node 1",
-		Url:            "http://example.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -240,9 +264,12 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 	})
 
 	chainNode2 := NewChainNode(ChainNodeData{
-		Name:           "Node 2",
-		Url:            "http://example2.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 2",
+		Url:  "http://example2.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -251,9 +278,12 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 	})
 
 	chainNode3 := NewChainNode(ChainNodeData{
-		Name:           "Node 3",
-		Url:            "http://example3.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 3",
+		Url:  "http://example3.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -296,9 +326,12 @@ func TestReturnErrorType(t *testing.T) {
 	}
 
 	chainNode1 := NewChainNode(ChainNodeData{
-		Name:           "Node 1",
-		Url:            "http://example.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {

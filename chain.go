@@ -30,7 +30,7 @@ func createMiddleware(node *Chain, unit *ChainNode) RequestMiddleware {
 
 		defer func() {
 			go func() {
-				time.Sleep(unit.limit.per)
+				time.Sleep(unit.limit.Per)
 				node.mutex.Lock()
 				unit.hits -= 1
 				node.mutex.Unlock()
@@ -142,7 +142,7 @@ func (c *Chain) findNode(excludeNodes map[uuid.UUID]bool) *ChainNode {
 		return c.nodes[i].priority > c.nodes[j].priority
 	})
 	for _, node := range c.nodes {
-		if node.hits < node.limit.count && !excludeNodes[node.id] {
+		if node.hits < node.limit.Count && !excludeNodes[node.id] {
 			return node
 		}
 	}
