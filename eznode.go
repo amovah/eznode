@@ -16,11 +16,11 @@ type EzNode struct {
 func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, error) {
 	selectedChain := e.chains[chainId]
 	if selectedChain == nil {
-		return nil, errors.New(fmt.Sprintf("cannot find a chain with id %s", chainId))
+		return nil, errors.New(fmt.Sprintf("cannot find chain id %s", chainId))
 	}
 
 	excludeNodes := make(map[uuid.UUID]bool)
-	errorTrace := make([]NodeErrorTrace, 0)
+	errorTrace := make([]NodeTrace, 0)
 	return e.tryRequest(selectedChain, request, 0, excludeNodes, errorTrace)
 }
 
@@ -29,18 +29,20 @@ func (e *EzNode) tryRequest(
 	request *http.Request,
 	tryCount int,
 	excludeNodes map[uuid.UUID]bool,
-	errorTrace []NodeErrorTrace,
+	errorTrace []NodeTrace,
 ) (*Response, error) {
 	selectedNode := selectedChain.getFreeNode(excludeNodes)
 	if selectedNode == nil {
+		errorMessage := fmt.Sprintf("'%s' chain is at full capacity", selectedChain.id)
 		return nil, EzNodeError{
-			Message: fmt.Sprintf("'%s' is at full capacity", selectedChain.id),
+			Message: errorMessage,
 			Metadata: ChainResponseMetadata{
 				ChainId:      selectedChain.id,
 				RequestedUrl: request.URL.String(),
 				Retry:        tryCount,
-				ErrorTrace: append(errorTrace, NodeErrorTrace{
-					Err: errors.New(fmt.Sprintf("'%s' is at full capacity", selectedChain.id)),
+				Trace: append(errorTrace, NodeTrace{
+					StatusCode: http.StatusTooManyRequests,
+					Err:        errors.New(errorMessage),
 				}),
 			},
 		}
@@ -51,27 +53,53 @@ func (e *EzNode) tryRequest(
 	defer cancelTimeout()
 
 	res, err := e.apiCaller.doRequest(ctx, createdRequest)
-	if isResponseValid(selectedChain.failureStatusCodes, res, err) || tryCount >= selectedChain.retryCount {
-		metadata := ChainResponseMetadata{
+
+	if isResponseValid(selectedChain.failureStatusCodes, res, err) {
+		res.Metadata = ChainResponseMetadata{
 			ChainId:      selectedChain.id,
 			RequestedUrl: request.URL.String(),
 			Retry:        tryCount,
-			ErrorTrace: append(errorTrace, NodeErrorTrace{
-				NodeName: selectedNode.name,
-				NodeId:   selectedNode.id,
-				Err:      err,
+			Trace: append(errorTrace, NodeTrace{
+				NodeName:   selectedNode.name,
+				NodeId:     selectedNode.id,
+				StatusCode: res.StatusCode,
+				Err:        nil,
 			}),
 		}
-
-		if err != nil {
-			return res, EzNodeError{
-				Message:  err.Error(),
-				Metadata: metadata,
-			}
-		}
-
-		res.Metadata = metadata
 		return res, nil
+	}
+
+	if err != nil {
+		errorTrace = append(errorTrace, NodeTrace{
+			NodeName: selectedNode.name,
+			NodeId:   selectedNode.id,
+			Err:      err,
+		})
+	} else {
+		errorTrace = append(errorTrace, NodeTrace{
+			NodeName:   selectedNode.name,
+			NodeId:     selectedNode.id,
+			StatusCode: res.StatusCode,
+			Err:        errors.New(fmt.Sprintf("request failed with status code %v", res.StatusCode)),
+		})
+	}
+
+	if tryCount >= selectedChain.retryCount {
+		httpStatusCode := http.StatusFailedDependency
+		errorMessage := "reached max retries, " + http.StatusText(httpStatusCode)
+
+		return &Response{}, EzNodeError{
+			Message: errorMessage,
+			Metadata: ChainResponseMetadata{
+				ChainId:      selectedChain.id,
+				RequestedUrl: request.URL.String(),
+				Retry:        tryCount,
+				Trace: append(errorTrace, NodeTrace{
+					StatusCode: httpStatusCode,
+					Err:        errors.New(errorMessage),
+				}),
+			},
+		}
 	}
 
 	excludeNodes[selectedNode.id] = true

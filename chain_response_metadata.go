@@ -6,11 +6,12 @@ type ChainResponseMetadata struct {
 	ChainId      string
 	RequestedUrl string
 	Retry        int
-	ErrorTrace   []NodeErrorTrace
+	Trace        []NodeTrace
 }
 
-type NodeErrorTrace struct {
-	NodeName string
-	NodeId   uuid.UUID
-	Err      error
+type NodeTrace struct {
+	NodeName   string
+	NodeId     uuid.UUID
+	StatusCode int
+	Err        error
 }

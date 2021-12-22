@@ -10,9 +10,12 @@ import (
 
 func TestFindFreeNode(t *testing.T) {
 	chainNode1 := NewChainNode(ChainNodeData{
-		Name:           "Node 1",
-		Url:            "http://example.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -45,9 +48,12 @@ func TestFindFreeNode(t *testing.T) {
 
 func TestNotFindNode(t *testing.T) {
 	chainNode1 := NewChainNode(ChainNodeData{
-		Name:           "Node 1",
-		Url:            "http://example.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -79,9 +85,12 @@ func TestNotFindNode(t *testing.T) {
 
 func TestLoadBalance(t *testing.T) {
 	chainNode1 := NewChainNode(ChainNodeData{
-		Name:           "Node 1",
-		Url:            "http://example.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {
@@ -90,9 +99,12 @@ func TestLoadBalance(t *testing.T) {
 	})
 
 	chainNode2 := NewChainNode(ChainNodeData{
-		Name:           "Node 2",
-		Url:            "http://example.com",
-		Limit:          NewChainNodeLimit(10, 2*time.Second),
+		Name: "Node 2",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
 		Middleware: func(request *http.Request) *http.Request {

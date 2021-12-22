@@ -40,11 +40,11 @@ func NewChainNode(
 		log.Fatal(err)
 	}
 
-	if chainNodeData.Limit.count <= 0 {
+	if chainNodeData.Limit.Count <= 0 {
 		log.Fatal("limit.count cannot be less than 0")
 	}
 
-	if chainNodeData.Limit.per <= 0 {
+	if chainNodeData.Limit.Per <= 0 {
 		log.Fatal("limit.per cannot be less than 0")
 	}
 
