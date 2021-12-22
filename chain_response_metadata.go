@@ -5,8 +5,8 @@ import "github.com/google/uuid"
 type ChainResponseMetadata struct {
 	ChainId      string
 	RequestedUrl string
-	Retry int
-	Trace []NodeTrace
+	Retry        int
+	Trace        []NodeTrace
 }
 
 type NodeTrace struct {
