@@ -20,7 +20,7 @@ func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, 
 	}
 
 	excludeNodes := make(map[uuid.UUID]bool)
-	errorTrace := make([]NodeErrorTrace, 0)
+	errorTrace := make([]NodeTrace, 0)
 	return e.tryRequest(selectedChain, request, 0, excludeNodes, errorTrace)
 }
 
@@ -29,7 +29,7 @@ func (e *EzNode) tryRequest(
 	request *http.Request,
 	tryCount int,
 	excludeNodes map[uuid.UUID]bool,
-	errorTrace []NodeErrorTrace,
+	errorTrace []NodeTrace,
 ) (*Response, error) {
 	selectedNode := selectedChain.getFreeNode(excludeNodes)
 	if selectedNode == nil {
@@ -40,7 +40,7 @@ func (e *EzNode) tryRequest(
 				ChainId:      selectedChain.id,
 				RequestedUrl: request.URL.String(),
 				Retry:        tryCount,
-				ErrorTrace: append(errorTrace, NodeErrorTrace{
+				Trace: append(errorTrace, NodeTrace{
 					StatusCode: http.StatusTooManyRequests,
 					Err:        errors.New(errorMessage),
 				}),
@@ -59,19 +59,24 @@ func (e *EzNode) tryRequest(
 			ChainId:      selectedChain.id,
 			RequestedUrl: request.URL.String(),
 			Retry:        tryCount,
-			ErrorTrace:   errorTrace,
+			Trace: append(errorTrace, NodeTrace{
+				NodeName:   selectedNode.name,
+				NodeId:     selectedNode.id,
+				StatusCode: res.StatusCode,
+				Err:        nil,
+			}),
 		}
 		return res, nil
 	}
 
 	if err != nil {
-		errorTrace = append(errorTrace, NodeErrorTrace{
+		errorTrace = append(errorTrace, NodeTrace{
 			NodeName: selectedNode.name,
 			NodeId:   selectedNode.id,
 			Err:      err,
 		})
 	} else {
-		errorTrace = append(errorTrace, NodeErrorTrace{
+		errorTrace = append(errorTrace, NodeTrace{
 			NodeName:   selectedNode.name,
 			NodeId:     selectedNode.id,
 			StatusCode: res.StatusCode,
@@ -89,7 +94,7 @@ func (e *EzNode) tryRequest(
 				ChainId:      selectedChain.id,
 				RequestedUrl: request.URL.String(),
 				Retry:        tryCount,
-				ErrorTrace: append(errorTrace, NodeErrorTrace{
+				Trace: append(errorTrace, NodeTrace{
 					StatusCode: httpStatusCode,
 					Err:        errors.New(errorMessage),
 				}),
