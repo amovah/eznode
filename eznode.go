@@ -80,7 +80,8 @@ func (e *EzNode) tryRequest(
 	}
 
 	if tryCount >= selectedChain.retryCount {
-		errorMessage := "reached max retries"
+		httpStatusCode := http.StatusFailedDependency
+		errorMessage := "reached max retries, " + http.StatusText(httpStatusCode)
 
 		return &Response{}, EzNodeError{
 			Message: errorMessage,
@@ -89,7 +90,8 @@ func (e *EzNode) tryRequest(
 				RequestedUrl: request.URL.String(),
 				Retry:        tryCount,
 				ErrorTrace: append(errorTrace, NodeErrorTrace{
-					Err: errors.New(errorMessage),
+					StatusCode: httpStatusCode,
+					Err:        errors.New(errorMessage),
 				}),
 			},
 		}
