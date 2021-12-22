@@ -33,14 +33,15 @@ func (e *EzNode) tryRequest(
 ) (*Response, error) {
 	selectedNode := selectedChain.getFreeNode(excludeNodes)
 	if selectedNode == nil {
+		errorMessage := fmt.Sprintf("'%s' is at full capacity", selectedChain.id)
 		return nil, EzNodeError{
-			Message: fmt.Sprintf("'%s' is at full capacity", selectedChain.id),
+			Message: errorMessage,
 			Metadata: ChainResponseMetadata{
 				ChainId:      selectedChain.id,
 				RequestedUrl: request.URL.String(),
 				Retry:        tryCount,
 				ErrorTrace: append(errorTrace, NodeErrorTrace{
-					Err: errors.New(fmt.Sprintf("'%s' is at full capacity", selectedChain.id)),
+					Err: errors.New(errorMessage),
 				}),
 			},
 		}
@@ -51,27 +52,45 @@ func (e *EzNode) tryRequest(
 	defer cancelTimeout()
 
 	res, err := e.apiCaller.doRequest(ctx, createdRequest)
-	if isResponseValid(selectedChain.failureStatusCodes, res, err) || tryCount >= selectedChain.retryCount {
-		metadata := ChainResponseMetadata{
+
+	if isResponseValid(selectedChain.failureStatusCodes, res, err) {
+		res.Metadata = ChainResponseMetadata{
 			ChainId:      selectedChain.id,
 			RequestedUrl: request.URL.String(),
 			Retry:        tryCount,
-			ErrorTrace: append(errorTrace, NodeErrorTrace{
-				NodeName: selectedNode.name,
-				NodeId:   selectedNode.id,
-				Err:      err,
-			}),
+			ErrorTrace:   errorTrace,
 		}
-
-		if err != nil {
-			return res, EzNodeError{
-				Message:  err.Error(),
-				Metadata: metadata,
-			}
-		}
-
-		res.Metadata = metadata
 		return res, nil
+	}
+
+	if err != nil {
+		errorTrace = append(errorTrace, NodeErrorTrace{
+			NodeName: selectedNode.name,
+			NodeId:   selectedNode.id,
+			Err:      err,
+		})
+	} else {
+		errorTrace = append(errorTrace, NodeErrorTrace{
+			NodeName: selectedNode.name,
+			NodeId:   selectedNode.id,
+			Err:      errors.New(fmt.Sprintf("request failed with status code %s", res.StatusCode)),
+		})
+	}
+
+	if tryCount >= selectedChain.retryCount {
+		errorMessage := "reached max retries"
+
+		return &Response{}, EzNodeError{
+			Message: errorMessage,
+			Metadata: ChainResponseMetadata{
+				ChainId:      selectedChain.id,
+				RequestedUrl: request.URL.String(),
+				Retry:        tryCount,
+				ErrorTrace: append(errorTrace, NodeErrorTrace{
+					Err: errors.New(errorMessage),
+				}),
+			},
+		}
 	}
 
 	excludeNodes[selectedNode.id] = true
