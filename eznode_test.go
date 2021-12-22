@@ -362,12 +362,16 @@ func TestLockAndReleaseResource(t *testing.T) {
 	res, err := ezNode.SendRequest("test-chain", request)
 	assert.Nil(t, err)
 	assert.Equal(t, 200, res.StatusCode)
+	assert.Equal(t, uint(1), ezNode.chains["test-chain"].nodes[0].hits)
 
 	res, err = ezNode.SendRequest("test-chain", request)
 	assert.NotNil(t, err)
+	assert.Equal(t, uint(1), ezNode.chains["test-chain"].nodes[0].hits)
 
 	time.Sleep(2 * time.Second)
+	assert.Equal(t, uint(0), ezNode.chains["test-chain"].nodes[0].hits)
 	res, err = ezNode.SendRequest("test-chain", request)
 	assert.Nil(t, err)
 	assert.Equal(t, 200, res.StatusCode)
+	assert.Equal(t, uint(1), ezNode.chains["test-chain"].nodes[0].hits)
 }
