@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"net/http"
 	"sync/atomic"
 	"time"
@@ -21,7 +20,7 @@ func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, 
 		return nil, errors.New(fmt.Sprintf("cannot find chain id %s", chainId))
 	}
 
-	excludeNodes := make(map[uuid.UUID]bool)
+	excludeNodes := make(map[string]bool)
 	errorTrace := make([]NodeTrace, 0)
 	return e.tryRequest(selectedChain, request, 0, excludeNodes, errorTrace)
 }
@@ -30,7 +29,7 @@ func (e *EzNode) tryRequest(
 	selectedChain *Chain,
 	request *http.Request,
 	tryCount int,
-	excludeNodes map[uuid.UUID]bool,
+	excludeNodes map[string]bool,
 	errorTrace []NodeTrace,
 ) (*Response, error) {
 	selectedNode := selectedChain.getFreeNode(excludeNodes)
@@ -72,7 +71,6 @@ func (e *EzNode) tryRequest(
 			Retry:        tryCount,
 			Trace: append(errorTrace, NodeTrace{
 				NodeName:   selectedNode.name,
-				NodeId:     selectedNode.id,
 				StatusCode: res.StatusCode,
 				Err:        nil,
 			}),
@@ -83,13 +81,11 @@ func (e *EzNode) tryRequest(
 	if err != nil {
 		errorTrace = append(errorTrace, NodeTrace{
 			NodeName: selectedNode.name,
-			NodeId:   selectedNode.id,
 			Err:      err,
 		})
 	} else {
 		errorTrace = append(errorTrace, NodeTrace{
 			NodeName:   selectedNode.name,
-			NodeId:     selectedNode.id,
 			StatusCode: res.StatusCode,
 			Err:        errors.New(fmt.Sprintf("request failed with status code %v", res.StatusCode)),
 		})
@@ -113,7 +109,7 @@ func (e *EzNode) tryRequest(
 		}
 	}
 
-	excludeNodes[selectedNode.id] = true
+	excludeNodes[selectedNode.name] = true
 	return e.tryRequest(selectedChain, request, tryCount+1, excludeNodes, errorTrace)
 }
 

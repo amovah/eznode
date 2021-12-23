@@ -1,7 +1,6 @@
 package eznode
 
 import (
-	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"sync"
@@ -54,6 +53,15 @@ func NewChain(
 		log.Fatal("retry must be greater than -1")
 	}
 
+	seenName := make(map[string]bool)
+	for _, node := range chainData.Nodes {
+		if seenName[node.name] {
+			log.Fatal("you cannot have duplicate name")
+		}
+
+		seenName[node.name] = true
+	}
+
 	failureStatusCodes := make(map[int]bool)
 	for _, statusCode := range chainData.FailureStatusCodes {
 		failureStatusCodes[statusCode] = true
@@ -74,7 +82,7 @@ func NewChain(
 	}
 }
 
-func (c *Chain) getFreeNode(excludeNodes map[uuid.UUID]bool) *ChainNode {
+func (c *Chain) getFreeNode(excludeNodes map[string]bool) *ChainNode {
 	if len(excludeNodes) == len(c.nodes) {
 		return nil
 	}
@@ -113,7 +121,7 @@ func (c *Chain) getFreeNode(excludeNodes map[uuid.UUID]bool) *ChainNode {
 	return foundNode
 }
 
-func (c *Chain) findNode(excludeNodes map[uuid.UUID]bool) *ChainNode {
+func (c *Chain) findNode(excludeNodes map[string]bool) *ChainNode {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -122,7 +130,7 @@ func (c *Chain) findNode(excludeNodes map[uuid.UUID]bool) *ChainNode {
 	}
 
 	for _, node := range c.nodes {
-		if !excludeNodes[node.id] && node.priority >= selectedNode.priority && node.hits < node.limit.Count {
+		if !excludeNodes[node.name] && node.priority >= selectedNode.priority && node.hits < node.limit.Count {
 			if node.hits <= selectedNode.hits || selectedNode.priority == -1 {
 				selectedNode = node
 			}

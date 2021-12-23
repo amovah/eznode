@@ -1,17 +1,15 @@
 package eznode
 
 import (
-	"github.com/google/uuid"
 	"sync/atomic"
 )
 
 type ChainNodeStats struct {
-	Id          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	CurrentHits uint      `json:"current_hits"`
-	TotalHits   uint64    `json:"total_hits"`
-	Limits      uint      `json:"limits"`
-	Priority    int       `json:"priority"`
+	Name        string `json:"name"`
+	CurrentHits uint   `json:"current_hits"`
+	TotalHits   uint64 `json:"total_hits"`
+	Limits      uint   `json:"limits"`
+	Priority    int    `json:"priority"`
 }
 
 type ChainStats struct {
@@ -24,7 +22,6 @@ func (c *Chain) getStats() []ChainNodeStats {
 	nodeStats := make([]ChainNodeStats, 0)
 	for _, node := range c.nodes {
 		nodeStats = append(nodeStats, ChainNodeStats{
-			Id:          node.id,
 			Name:        node.name,
 			CurrentHits: node.hits,
 			TotalHits:   atomic.LoadUint64(&node.totalHits),

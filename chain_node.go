@@ -1,7 +1,6 @@
 package eznode
 
 import (
-	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"net/url"
@@ -9,7 +8,6 @@ import (
 )
 
 type ChainNode struct {
-	id             uuid.UUID
 	name           string
 	url            *url.URL
 	limit          ChainNodeLimit
@@ -69,7 +67,6 @@ func NewChainNode(
 	}
 
 	return &ChainNode{
-		id:             uuid.New(),
 		name:           chainNodeData.Name,
 		url:            parsedUrl,
 		limit:          chainNodeData.Limit,
