@@ -4,7 +4,6 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"net/http"
-	"sort"
 	"sync"
 	"time"
 )
@@ -20,23 +19,10 @@ type Chain struct {
 	retryCount         int
 }
 
-func createMiddleware(node *Chain, unit *ChainNode) RequestMiddleware {
-	mainMiddleware := unit.middleware
+func createMiddleware(chainNode *ChainNode) RequestMiddleware {
+	mainMiddleware := chainNode.middleware
 
 	return func(request *http.Request) *http.Request {
-		node.mutex.Lock()
-		unit.hits += 1
-		node.mutex.Unlock()
-
-		defer func() {
-			go func() {
-				time.Sleep(unit.limit.Per)
-				node.mutex.Lock()
-				unit.hits -= 1
-				node.mutex.Unlock()
-			}()
-		}()
-
 		return mainMiddleware(request)
 	}
 }
@@ -73,22 +59,19 @@ func NewChain(
 		failureStatusCodes[statusCode] = true
 	}
 
-	createdChain := &Chain{
+	nodes := chainData.Nodes
+	for _, node := range nodes {
+		node.middleware = createMiddleware(node)
+	}
+
+	return &Chain{
 		id:                 chainData.Id,
 		mutex:              &sync.RWMutex{},
 		checkTickRate:      chainData.CheckTickRate,
 		failureStatusCodes: failureStatusCodes,
 		retryCount:         chainData.RetryCount,
+		nodes:              nodes,
 	}
-
-	nodes := chainData.Nodes
-	for _, node := range nodes {
-		node.middleware = createMiddleware(createdChain, node)
-	}
-
-	createdChain.nodes = nodes
-
-	return createdChain
 }
 
 func (c *Chain) getFreeNode(excludeNodes map[uuid.UUID]bool) *ChainNode {
@@ -131,21 +114,25 @@ func (c *Chain) getFreeNode(excludeNodes map[uuid.UUID]bool) *ChainNode {
 }
 
 func (c *Chain) findNode(excludeNodes map[uuid.UUID]bool) *ChainNode {
-	c.mutex.RLock()
-	defer c.mutex.RUnlock()
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 
-	sort.Slice(c.nodes, func(i, j int) bool {
-		if c.nodes[i].priority == c.nodes[j].priority {
-			return c.nodes[i].hits < c.nodes[j].hits
-		}
+	selectedNode := &ChainNode{
+		priority: -1,
+	}
 
-		return c.nodes[i].priority > c.nodes[j].priority
-	})
 	for _, node := range c.nodes {
-		if node.hits < node.limit.Count && !excludeNodes[node.id] {
-			return node
+		if !excludeNodes[node.id] && node.priority >= selectedNode.priority && node.hits < node.limit.Count {
+			if node.hits <= selectedNode.hits || selectedNode.priority == -1 {
+				selectedNode = node
+			}
 		}
 	}
 
-	return nil
+	if selectedNode.priority == -1 {
+		return nil
+	}
+
+	selectedNode.hits += 1
+	return selectedNode
 }

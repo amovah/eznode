@@ -15,7 +15,8 @@ type ChainNode struct {
 	limit          ChainNodeLimit
 	requestTimeout time.Duration
 	hits           uint
-	priority       uint
+	totalHits      uint64
+	priority       int
 	middleware     RequestMiddleware
 }
 
@@ -24,7 +25,7 @@ type ChainNodeData struct {
 	Url            string
 	Limit          ChainNodeLimit
 	RequestTimeout time.Duration
-	Priority       uint
+	Priority       int
 	Middleware     RequestMiddleware
 }
 
@@ -50,6 +51,10 @@ func NewChainNode(
 
 	if chainNodeData.RequestTimeout < 1*time.Second {
 		log.Fatal("requestTimeout cannot be less than 1 second")
+	}
+
+	if chainNodeData.Priority < 0 {
+		log.Fatal("priority cannot be less than 0")
 	}
 
 	middleware := func(request *http.Request) *http.Request {

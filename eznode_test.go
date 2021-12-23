@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
+	"sync"
 	"testing"
 	"time"
 )
@@ -374,4 +375,108 @@ func TestLockAndReleaseResource(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 200, res.StatusCode)
 	assert.Equal(t, uint(1), ezNode.chains["test-chain"].nodes[0].hits)
+}
+
+func TestConcurrentRequests(t *testing.T) {
+	mockedApiCall := mockApiCall{
+		returnFunc: func(request *http.Request) (*Response, error) {
+			time.Sleep(50 * time.Millisecond)
+			return &Response{
+				StatusCode: 200,
+				Body:       nil,
+				Headers:    &http.Header{},
+			}, nil
+		},
+		validateFunc: func(request *http.Request) {
+		},
+	}
+
+	chainNode1 := NewChainNode(ChainNodeData{
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 100,
+			Per:   1 * time.Second,
+		},
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	chainNode2 := NewChainNode(ChainNodeData{
+		Name: "Node 2",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 25,
+			Per:   1 * time.Second,
+		},
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	chainNode3 := NewChainNode(ChainNodeData{
+		Name: "Node 3",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 60,
+			Per:   60 * time.Second,
+		},
+		RequestTimeout: 1 * time.Second,
+		Priority:       0,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	createdChain := NewChain(
+		ChainData{
+			Id: "test-chain",
+			Nodes: []*ChainNode{
+				chainNode1,
+				chainNode3,
+				chainNode2,
+			},
+			CheckTickRate: CheckTick{
+				TickRate:         100 * time.Millisecond,
+				MaxCheckDuration: 5 * time.Second,
+			},
+			FailureStatusCodes: []int{},
+			RetryCount:         2,
+		},
+	)
+
+	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
+	request, _ := http.NewRequest("GET", "/", nil)
+
+	w := &sync.WaitGroup{}
+	for i := 0; i < 100; i++ {
+		go func() {
+			w.Add(1)
+			ezNode.SendRequest("test-chain", request)
+			w.Done()
+		}()
+	}
+	w.Wait()
+
+	for i := 0; i < 100; i++ {
+		go func() {
+			w.Add(1)
+			ezNode.SendRequest("test-chain", request)
+			w.Done()
+		}()
+	}
+
+	for _, node := range ezNode.chains["test-chain"].nodes {
+		assert.True(t, node.hits <= node.limit.Count)
+	}
+	w.Wait()
+
+	for _, node := range ezNode.chains["test-chain"].nodes {
+		assert.True(t, node.hits <= node.limit.Count)
+	}
 }

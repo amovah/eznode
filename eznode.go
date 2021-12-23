@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"net/http"
+	"sync/atomic"
+	"time"
 )
 
 type EzNode struct {
@@ -52,7 +54,16 @@ func (e *EzNode) tryRequest(
 	ctx, cancelTimeout := context.WithTimeout(context.Background(), selectedNode.requestTimeout)
 	defer cancelTimeout()
 
+	go func() {
+		atomic.AddUint64(&selectedNode.totalHits, 1)
+	}()
 	res, err := e.apiCaller.doRequest(ctx, createdRequest)
+	go func() {
+		time.Sleep(selectedNode.limit.Per)
+		selectedChain.mutex.Lock()
+		selectedNode.hits -= 1
+		selectedChain.mutex.Unlock()
+	}()
 
 	if isResponseValid(selectedChain.failureStatusCodes, res, err) {
 		res.Metadata = ChainResponseMetadata{
