@@ -19,7 +19,9 @@ func (e *EzNode) StartSyncStorage(syncer SyncWithStorage) {
 				case <-e.syncStorage.done:
 					return
 				case <-e.syncStorage.ticker.C:
-					syncer(e.GetStats())
+					if syncer != nil {
+						syncer(e.GetStats())
+					}
 				}
 			}
 		}()
