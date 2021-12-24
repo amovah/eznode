@@ -55,6 +55,7 @@ func (e *EzNode) LoadStats(loadedStats []ChainStats) {
 				if loadedNode != nil {
 					node.hits = loadedNode.CurrentHits
 					node.totalHits = loadedNode.TotalHits
+					node.responseStats = loadedNode.ResponseStats
 				}
 			}
 		}

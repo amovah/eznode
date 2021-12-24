@@ -54,8 +54,8 @@ func (e *EzNode) tryRequest(
 	ctx, cancelTimeout := context.WithTimeout(context.Background(), selectedNode.requestTimeout)
 	defer cancelTimeout()
 
-	collectMetric(selectedNode)
 	res, err := e.apiCaller.doRequest(ctx, createdRequest)
+	collectMetric(selectedNode, res, err)
 	releaseResource(selectedChain, selectedNode)
 
 	if isResponseValid(selectedChain.failureStatusCodes, res, err) {
@@ -107,9 +107,16 @@ func (e *EzNode) tryRequest(
 	return e.tryRequest(selectedChain, request, tryCount+1, excludeNodes, errorTrace)
 }
 
-func collectMetric(selectedNode *ChainNode) {
+func collectMetric(selectedNode *ChainNode, res *Response, err error) {
 	go func() {
 		atomic.AddUint64(&selectedNode.totalHits, 1)
+		if err != nil {
+			responseStats := selectedNode.responseStats[res.StatusCode]
+			atomic.AddUint64(&responseStats, 1)
+		} else {
+			responsesStats := selectedNode.responseStats[0]
+			atomic.AddUint64(&responsesStats, 1)
+		}
 	}()
 }
 

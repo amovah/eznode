@@ -46,6 +46,7 @@ func TestLoadWithEmptyStorageShouldBeEmpty(t *testing.T) {
 
 	assert.Equal(t, uint(0), ezNode.chains["test-chain"].nodes[0].hits)
 	assert.Equal(t, uint64(0), ezNode.chains["test-chain"].nodes[0].totalHits)
+	assert.Equal(t, 0, len(ezNode.chains["test-chain"].nodes[0].responseStats))
 }
 
 func TestShouldLoadCorrectly(t *testing.T) {
@@ -94,8 +95,12 @@ func TestShouldLoadCorrectly(t *testing.T) {
 					Name:        "Node 1",
 					CurrentHits: currentHit,
 					TotalHits:   totalHits,
-					Limits:      0,
-					Priority:    0,
+					ResponseStats: map[int]uint64{
+						0:   10,
+						200: 5,
+					},
+					Limits:   0,
+					Priority: 0,
 				},
 			},
 		},
@@ -103,6 +108,8 @@ func TestShouldLoadCorrectly(t *testing.T) {
 
 	assert.Equal(t, currentHit, ezNode.chains["test-chain"].nodes[0].hits)
 	assert.Equal(t, totalHits, ezNode.chains["test-chain"].nodes[0].totalHits)
+	assert.Equal(t, uint64(10), ezNode.chains["test-chain"].nodes[0].responseStats[0])
+	assert.Equal(t, uint64(5), ezNode.chains["test-chain"].nodes[0].responseStats[200])
 }
 
 func TestStartStopSyncStore(t *testing.T) {

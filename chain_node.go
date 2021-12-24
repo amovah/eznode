@@ -14,6 +14,7 @@ type ChainNode struct {
 	requestTimeout time.Duration
 	hits           uint
 	totalHits      uint64
+	responseStats  map[int]uint64
 	priority       int
 	middleware     RequestMiddleware
 }
@@ -73,6 +74,7 @@ func NewChainNode(
 		requestTimeout: chainNodeData.RequestTimeout,
 		hits:           0,
 		totalHits:      0,
+		responseStats:  make(map[int]uint64),
 		priority:       chainNodeData.Priority,
 		middleware:     middleware,
 	}
