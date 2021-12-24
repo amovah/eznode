@@ -12,6 +12,7 @@ import (
 type EzNode struct {
 	chains    map[string]*Chain
 	apiCaller ApiCaller
+	store     store
 }
 
 func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, error) {
@@ -53,16 +54,9 @@ func (e *EzNode) tryRequest(
 	ctx, cancelTimeout := context.WithTimeout(context.Background(), selectedNode.requestTimeout)
 	defer cancelTimeout()
 
-	go func() {
-		atomic.AddUint64(&selectedNode.totalHits, 1)
-	}()
+	collectMetric(selectedNode)
 	res, err := e.apiCaller.doRequest(ctx, createdRequest)
-	go func() {
-		time.Sleep(selectedNode.limit.Per)
-		selectedChain.mutex.Lock()
-		selectedNode.hits -= 1
-		selectedChain.mutex.Unlock()
-	}()
+	releaseResource(selectedChain, selectedNode)
 
 	if isResponseValid(selectedChain.failureStatusCodes, res, err) {
 		res.Metadata = ChainResponseMetadata{
@@ -113,34 +107,21 @@ func (e *EzNode) tryRequest(
 	return e.tryRequest(selectedChain, request, tryCount+1, excludeNodes, errorTrace)
 }
 
+func collectMetric(selectedNode *ChainNode) {
+	go func() {
+		atomic.AddUint64(&selectedNode.totalHits, 1)
+	}()
+}
+
+func releaseResource(selectedChain *Chain, selectedNode *ChainNode) {
+	go func() {
+		time.Sleep(selectedNode.limit.Per)
+		selectedChain.mutex.Lock()
+		selectedNode.hits -= 1
+		selectedChain.mutex.Unlock()
+	}()
+}
+
 func isResponseValid(failureStatusCodes map[int]bool, res *Response, err error) bool {
 	return err == nil && !(failureStatusCodes[res.StatusCode])
-}
-
-type Option func(*EzNode)
-
-func NewEzNode(chains []*Chain, options ...Option) *EzNode {
-	chainHashMap := make(map[string]*Chain)
-	for _, userChain := range chains {
-		chainHashMap[userChain.id] = userChain
-	}
-
-	ezNode := &EzNode{
-		chains: chainHashMap,
-		apiCaller: &apiCallerClient{
-			client: createHttpClient(),
-		},
-	}
-
-	for _, option := range options {
-		option(ezNode)
-	}
-
-	return ezNode
-}
-
-func WithApiClient(apiCaller ApiCaller) Option {
-	return func(ezNode *EzNode) {
-		ezNode.apiCaller = apiCaller
-	}
 }

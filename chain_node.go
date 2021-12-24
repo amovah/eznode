@@ -72,6 +72,7 @@ func NewChainNode(
 		limit:          chainNodeData.Limit,
 		requestTimeout: chainNodeData.RequestTimeout,
 		hits:           0,
+		totalHits:      0,
 		priority:       chainNodeData.Priority,
 		middleware:     middleware,
 	}
