@@ -10,9 +10,9 @@ import (
 )
 
 type EzNode struct {
-	chains    map[string]*Chain
-	apiCaller ApiCaller
-	store     store
+	chains      map[string]*Chain
+	apiCaller   ApiCaller
+	syncStorage syncStorage
 }
 
 func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, error) {

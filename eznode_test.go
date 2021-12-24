@@ -64,8 +64,7 @@ func TestCallRightRequest(t *testing.T) {
 		},
 	)
 
-	ezNode, err := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
-	assert.Nil(t, err)
+	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 	request, _ := http.NewRequest("GET", "/", nil)
 	ezNode.SendRequest("test-chain", request)
 }
@@ -146,8 +145,7 @@ func TestRetry(t *testing.T) {
 		},
 	)
 
-	ezNode, err := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
-	assert.Nil(t, err)
+	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 	request, _ := http.NewRequest("GET", "/", nil)
 	ezNode.SendRequest("test-chain", request)
 	assert.Equal(t, chainMaxTry+1, retryCount)
@@ -229,8 +227,7 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 		},
 	)
 
-	ezNode, err := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
-	assert.Nil(t, err)
+	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 	request, _ := http.NewRequest("GET", "/", nil)
 	ezNode.SendRequest("test-chain", request)
 	assert.Equal(t, chainMaxTry+1, retryCount)
@@ -312,8 +309,7 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 		},
 	)
 
-	ezNode, err := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
-	assert.Nil(t, err)
+	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 	request, _ := http.NewRequest("GET", "/", nil)
 	ezNode.SendRequest("test-chain", request)
 	assert.Equal(t, 3, retryCount)
@@ -361,8 +357,7 @@ func TestLockAndReleaseResource(t *testing.T) {
 		},
 	)
 
-	ezNode, err := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
-	assert.Nil(t, err)
+	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 
 	request, _ := http.NewRequest("GET", "/", nil)
 	res, err := ezNode.SendRequest("test-chain", request)
@@ -455,8 +450,7 @@ func TestConcurrentRequests(t *testing.T) {
 		},
 	)
 
-	ezNode, err := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
-	assert.Nil(t, err)
+	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 	request, _ := http.NewRequest("GET", "/", nil)
 
 	w := &sync.WaitGroup{}

@@ -1,4 +1,4 @@
-package stats
+package eznode
 
 type ChainNodeStats struct {
 	Name        string `json:"name"`
