@@ -63,8 +63,14 @@ func NewChain(
 	}
 
 	failureStatusCodes := make(map[int]bool)
-	for _, statusCode := range chainData.FailureStatusCodes {
-		failureStatusCodes[statusCode] = true
+	if chainData.FailureStatusCodes != nil {
+		for _, statusCode := range chainData.FailureStatusCodes {
+			failureStatusCodes[statusCode] = true
+		}
+	} else {
+		for _, statusCode := range DefaultFailureStatusCodes {
+			failureStatusCodes[statusCode] = true
+		}
 	}
 
 	nodes := chainData.Nodes
