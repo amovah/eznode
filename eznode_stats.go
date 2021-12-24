@@ -1,15 +1,14 @@
 package eznode
 
 import (
-	"github.com/amovah/eznode/stats"
 	"sync/atomic"
 )
 
-func (c *Chain) getStats() []stats.ChainNodeStats {
+func (c *Chain) getStats() []ChainNodeStats {
 	c.mutex.RLock()
-	nodeStats := make([]stats.ChainNodeStats, 0)
+	nodeStats := make([]ChainNodeStats, 0)
 	for _, node := range c.nodes {
-		nodeStats = append(nodeStats, stats.ChainNodeStats{
+		nodeStats = append(nodeStats, ChainNodeStats{
 			Name:        node.name,
 			CurrentHits: node.hits,
 			TotalHits:   atomic.LoadUint64(&node.totalHits),
@@ -22,11 +21,11 @@ func (c *Chain) getStats() []stats.ChainNodeStats {
 	return nodeStats
 }
 
-func (e *EzNode) GetStats() []stats.ChainStats {
-	chainStats := make([]stats.ChainStats, 0)
+func (e *EzNode) GetStats() []ChainStats {
+	chainStats := make([]ChainStats, 0)
 
 	for _, chain := range e.chains {
-		chainStats = append(chainStats, stats.ChainStats{
+		chainStats = append(chainStats, ChainStats{
 			Id:    chain.id,
 			Nodes: chain.getStats(),
 		})
