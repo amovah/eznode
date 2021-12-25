@@ -110,12 +110,13 @@ func (e *EzNode) tryRequest(
 func collectMetric(selectedNode *ChainNode, res *Response, err error) {
 	go func() {
 		atomic.AddUint64(&selectedNode.totalHits, 1)
+
+		selectedNode.statsMutex.Lock()
+		defer selectedNode.statsMutex.Unlock()
 		if err != nil {
-			responsesStats := selectedNode.responseStats[0]
-			atomic.AddUint64(&responsesStats, 1)
+			selectedNode.responseStats[0] += 1
 		} else {
-			responseStats := selectedNode.responseStats[res.StatusCode]
-			atomic.AddUint64(&responseStats, 1)
+			selectedNode.responseStats[res.StatusCode] += 1
 		}
 	}()
 }

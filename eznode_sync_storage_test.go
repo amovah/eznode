@@ -103,7 +103,7 @@ func TestShouldLoadCorrectly(t *testing.T) {
 		},
 	})
 
-	assert.Equal(t, currentHit, ezNode.chains["test-chain"].nodes[0].hits)
+	assert.Equal(t, uint(0), ezNode.chains["test-chain"].nodes[0].hits)
 	assert.Equal(t, totalHits, ezNode.chains["test-chain"].nodes[0].totalHits)
 	assert.Equal(t, uint64(10), ezNode.chains["test-chain"].nodes[0].responseStats[0])
 	assert.Equal(t, uint64(5), ezNode.chains["test-chain"].nodes[0].responseStats[200])

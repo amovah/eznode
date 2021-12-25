@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type ChainNode struct {
 	hits           uint
 	totalHits      uint64
 	responseStats  map[int]uint64
+	statsMutex     *sync.Mutex
 	priority       int
 	middleware     RequestMiddleware
 }
@@ -79,6 +81,7 @@ func NewChainNode(
 		hits:           0,
 		totalHits:      0,
 		responseStats:  make(map[int]uint64),
+		statsMutex:     &sync.Mutex{},
 		priority:       chainNodeData.Priority,
 		middleware:     middleware,
 	}

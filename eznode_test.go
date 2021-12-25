@@ -24,7 +24,7 @@ func TestCallRightRequest(t *testing.T) {
 	mockedApiCall := mockApiCall{
 		returnFunc: func(request *http.Request) (*Response, error) {
 			return &Response{
-				StatusCode: 0,
+				StatusCode: 200,
 				Body:       nil,
 				Headers:    &http.Header{},
 			}, nil
