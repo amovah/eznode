@@ -64,7 +64,11 @@ func NewChainNode(
 
 		request.URL = newParsedUrl
 
-		return chainNodeData.Middleware(request)
+		if chainNodeData.Middleware != nil {
+			return chainNodeData.Middleware(request)
+		}
+
+		return request
 	}
 
 	return &ChainNode{
