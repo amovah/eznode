@@ -55,7 +55,9 @@ func (e *EzNode) LoadStats(loadedStats []ChainStats) {
 			for _, node := range chain.nodes {
 				loadedNode := loadedStatsMap[chain.id][node.name]
 				node.totalHits = loadedNode.TotalHits
-				node.responseStats = loadedNode.ResponseStats
+				if loadedNode.ResponseStats != nil {
+					node.responseStats = loadedNode.ResponseStats
+				}
 			}
 		}
 	}
