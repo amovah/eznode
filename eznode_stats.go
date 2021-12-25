@@ -9,11 +9,12 @@ func (c *Chain) getStats() []ChainNodeStats {
 	nodeStats := make([]ChainNodeStats, 0)
 	for _, node := range c.nodes {
 		nodeStats = append(nodeStats, ChainNodeStats{
-			Name:        node.name,
-			CurrentHits: node.hits,
-			TotalHits:   atomic.LoadUint64(&node.totalHits),
-			Limits:      node.limit.Count,
-			Priority:    node.priority,
+			Name:          node.name,
+			CurrentHits:   node.hits,
+			TotalHits:     atomic.LoadUint64(&node.totalHits),
+			ResponseStats: node.responseStats,
+			Limits:        node.limit.Count,
+			Priority:      node.priority,
 		})
 	}
 	c.mutex.RUnlock()
