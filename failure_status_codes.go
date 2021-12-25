@@ -3,7 +3,6 @@ package eznode
 import "net/http"
 
 var DefaultFailureStatusCodes = []int{
-	http.StatusBadRequest,
 	http.StatusGone,
 	http.StatusUnauthorized,
 	http.StatusForbidden,
