@@ -17,9 +17,6 @@ func TestLoadWithEmptyStorageShouldBeEmpty(t *testing.T) {
 		},
 		RequestTimeout: 1 * time.Second,
 		Priority:       1,
-		Middleware: func(request *http.Request) *http.Request {
-			return request
-		},
 	})
 
 	createdChain := NewChain(

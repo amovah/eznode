@@ -42,11 +42,11 @@ func (e *EzNode) StopSyncStorage() {
 }
 
 func (e *EzNode) LoadStats(loadedStats []ChainStats) {
-	loadedStatsMap := make(map[string]map[string]*ChainNodeStats)
+	loadedStatsMap := make(map[string]map[string]ChainNodeStats)
 	for _, stat := range loadedStats {
-		loadedStatsMap[stat.Id] = make(map[string]*ChainNodeStats)
+		loadedStatsMap[stat.Id] = make(map[string]ChainNodeStats)
 		for _, node := range stat.Nodes {
-			loadedStatsMap[stat.Id][node.Name] = &node
+			loadedStatsMap[stat.Id][node.Name] = node
 		}
 	}
 
@@ -54,11 +54,9 @@ func (e *EzNode) LoadStats(loadedStats []ChainStats) {
 		if loadedStatsMap[chain.id] != nil {
 			for _, node := range chain.nodes {
 				loadedNode := loadedStatsMap[chain.id][node.name]
-				if loadedNode != nil {
-					node.hits = loadedNode.CurrentHits
-					node.totalHits = loadedNode.TotalHits
-					node.responseStats = loadedNode.ResponseStats
-				}
+				node.hits = loadedNode.CurrentHits
+				node.totalHits = loadedNode.TotalHits
+				node.responseStats = loadedNode.ResponseStats
 			}
 		}
 	}
