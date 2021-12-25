@@ -55,8 +55,8 @@ func (e *EzNode) tryRequest(
 	defer cancelTimeout()
 
 	res, err := e.apiCaller.doRequest(ctx, createdRequest)
-	collectMetric(selectedNode, res, err)
-	releaseResource(selectedChain, selectedNode)
+	go collectMetric(selectedNode, res, err)
+	go releaseResource(selectedChain, selectedNode)
 
 	if isResponseValid(selectedChain.failureStatusCodes, res, err) {
 		res.Metadata = ChainResponseMetadata{
@@ -108,26 +108,22 @@ func (e *EzNode) tryRequest(
 }
 
 func collectMetric(selectedNode *ChainNode, res *Response, err error) {
-	go func() {
-		atomic.AddUint64(&selectedNode.totalHits, 1)
+	atomic.AddUint64(&selectedNode.totalHits, 1)
 
-		selectedNode.statsMutex.Lock()
-		defer selectedNode.statsMutex.Unlock()
-		if err != nil {
-			selectedNode.responseStats[0] += 1
-		} else {
-			selectedNode.responseStats[res.StatusCode] += 1
-		}
-	}()
+	selectedNode.statsMutex.Lock()
+	defer selectedNode.statsMutex.Unlock()
+	if err != nil {
+		selectedNode.responseStats[0] += 1
+	} else {
+		selectedNode.responseStats[res.StatusCode] += 1
+	}
 }
 
 func releaseResource(selectedChain *Chain, selectedNode *ChainNode) {
-	go func() {
-		time.Sleep(selectedNode.limit.Per)
-		selectedChain.mutex.Lock()
-		selectedNode.hits -= 1
-		selectedChain.mutex.Unlock()
-	}()
+	time.Sleep(selectedNode.limit.Per)
+	selectedChain.mutex.Lock()
+	selectedNode.hits -= 1
+	selectedChain.mutex.Unlock()
 }
 
 func isResponseValid(failureStatusCodes map[int]bool, res *Response, err error) bool {
