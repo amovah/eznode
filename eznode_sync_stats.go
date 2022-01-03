@@ -4,9 +4,9 @@ import (
 	"time"
 )
 
-type SyncWithStorage func([]ChainStats)
+type StatsSyncer func([]ChainStats)
 
-func (e *EzNode) StartSyncStorage(syncer SyncWithStorage) {
+func (e *EzNode) StartSyncStats(syncer StatsSyncer) {
 	e.syncStorage.mutex.Lock()
 	defer e.syncStorage.mutex.Unlock()
 
@@ -30,7 +30,7 @@ func (e *EzNode) StartSyncStorage(syncer SyncWithStorage) {
 	}
 }
 
-func (e *EzNode) StopSyncStorage() {
+func (e *EzNode) StopSyncStats() {
 	e.syncStorage.mutex.Lock()
 	defer e.syncStorage.mutex.Unlock()
 

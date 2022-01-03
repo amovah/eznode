@@ -150,11 +150,11 @@ func TestStartStopSyncStore(t *testing.T) {
 		),
 	)
 
-	ezNode.StartSyncStorage(func(chainStats []ChainStats) {
+	ezNode.StartSyncStats(func(chainStats []ChainStats) {
 		saveCallCount += 1
 	})
 	time.Sleep(2000 * time.Millisecond)
-	ezNode.StopSyncStorage()
+	ezNode.StopSyncStats()
 	assert.Equal(t, 4, saveCallCount)
 	time.Sleep(2 * time.Second)
 	assert.Equal(t, 4, saveCallCount)
