@@ -8,6 +8,7 @@ func (c *Chain) getStats() []ChainNodeStats {
 	c.mutex.RLock()
 	nodeStats := make([]ChainNodeStats, 0)
 	for _, node := range c.nodes {
+		node.statsMutex.Lock()
 		nodeStats = append(nodeStats, ChainNodeStats{
 			Name:          node.name,
 			CurrentHits:   node.hits,
@@ -16,6 +17,7 @@ func (c *Chain) getStats() []ChainNodeStats {
 			Limits:        node.limit.Count,
 			Priority:      node.priority,
 		})
+		node.statsMutex.Unlock()
 	}
 	c.mutex.RUnlock()
 
