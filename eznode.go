@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"sync/atomic"
 	"time"
 )
@@ -80,7 +81,7 @@ func (e *EzNode) tryRequest(
 	}
 	if err != nil {
 		nodeTrace.Err = err
-		if errors.Is(err, context.DeadlineExceeded) {
+		if errors.Is(err, context.DeadlineExceeded) || os.IsTimeout(err) {
 			nodeTrace.StatusCode = http.StatusRequestTimeout
 			errorTrace = append(errorTrace, nodeTrace)
 		} else {
@@ -121,7 +122,11 @@ func collectMetric(selectedNode *ChainNode, res *Response, err error) {
 	selectedNode.statsMutex.Lock()
 	defer selectedNode.statsMutex.Unlock()
 	if err != nil {
-		selectedNode.responseStats[0] += 1
+		if errors.Is(err, context.DeadlineExceeded) || os.IsTimeout(err) {
+			selectedNode.responseStats[http.StatusRequestTimeout] += 1
+		} else {
+			selectedNode.responseStats[0] += 1
+		}
 	} else {
 		selectedNode.responseStats[res.StatusCode] += 1
 	}
