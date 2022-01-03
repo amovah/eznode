@@ -43,6 +43,7 @@ func (e *EzNode) tryRequest(
 				RequestedUrl: request.URL.String(),
 				Retry:        tryCount,
 				Trace: append(errorTrace, NodeTrace{
+					Time:       time.Now(),
 					StatusCode: http.StatusTooManyRequests,
 					Err:        errors.New(errorMessage),
 				}),
@@ -64,6 +65,7 @@ func (e *EzNode) tryRequest(
 			RequestedUrl: request.URL.String(),
 			Retry:        tryCount,
 			Trace: append(errorTrace, NodeTrace{
+				Time:       time.Now(),
 				NodeName:   selectedNode.name,
 				StatusCode: res.StatusCode,
 				Err:        nil,
@@ -72,17 +74,23 @@ func (e *EzNode) tryRequest(
 		return res, nil
 	}
 
+	nodeTrace := NodeTrace{
+		Time:     time.Now(),
+		NodeName: selectedNode.name,
+	}
 	if err != nil {
-		errorTrace = append(errorTrace, NodeTrace{
-			NodeName: selectedNode.name,
-			Err:      err,
-		})
+		nodeTrace.Err = err
+		if errors.Is(err, context.DeadlineExceeded) {
+			nodeTrace.StatusCode = http.StatusRequestTimeout
+			errorTrace = append(errorTrace, nodeTrace)
+		} else {
+			nodeTrace.StatusCode = 0
+			errorTrace = append(errorTrace, nodeTrace)
+		}
 	} else {
-		errorTrace = append(errorTrace, NodeTrace{
-			NodeName:   selectedNode.name,
-			StatusCode: res.StatusCode,
-			Err:        errors.New(fmt.Sprintf("request failed with status code %v", res.StatusCode)),
-		})
+		nodeTrace.StatusCode = res.StatusCode
+		nodeTrace.Err = errors.New(fmt.Sprintf("request failed with status code %v", res.StatusCode))
+		errorTrace = append(errorTrace, nodeTrace)
 	}
 
 	if tryCount >= selectedChain.retryCount {

@@ -1,5 +1,7 @@
 package eznode
 
+import "time"
+
 type ChainResponseMetadata struct {
 	ChainId      string
 	RequestedUrl string
@@ -11,4 +13,5 @@ type NodeTrace struct {
 	NodeName   string
 	StatusCode int
 	Err        error
+	Time       time.Time
 }
