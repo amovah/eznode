@@ -22,35 +22,8 @@ type apiCallerClient struct {
 	client *http.Client
 }
 
-func (a *apiCallerClient) doRequest(context context.Context, request *http.Request) (*Response, error) {
-	responseChannel := make(chan *Response)
-	errorChannel := make(chan error)
-
-	go func() {
-		defer close(errorChannel)
-		defer close(responseChannel)
-
-		res, err := a.requestSlow(request)
-		if err != nil {
-			errorChannel <- err
-			return
-		}
-
-		responseChannel <- res
-	}()
-
-	select {
-	case <-context.Done():
-		return nil, context.Err()
-	case r := <-responseChannel:
-		return r, nil
-	case err := <-errorChannel:
-		return nil, err
-	}
-}
-
-func (a *apiCallerClient) requestSlow(request *http.Request) (*Response, error) {
-	res, err := a.client.Do(request)
+func (a *apiCallerClient) doRequest(ctx context.Context, request *http.Request) (*Response, error) {
+	res, err := a.client.Do(request.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}
