@@ -51,14 +51,19 @@ func (e *EzNode) LoadStats(loadedStats []ChainStats) {
 	}
 
 	for _, chain := range e.chains {
+		chain.mutex.Lock()
 		if loadedStatsMap[chain.id] != nil {
 			for _, node := range chain.nodes {
 				loadedNode := loadedStatsMap[chain.id][node.name]
 				node.totalHits = loadedNode.TotalHits
 				if loadedNode.ResponseStats != nil {
+					node.statsMutex.Lock()
 					node.responseStats = loadedNode.ResponseStats
+					node.fails = loadedNode.Fails
+					node.statsMutex.Unlock()
 				}
 			}
 		}
+		chain.mutex.Unlock()
 	}
 }

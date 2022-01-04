@@ -7,6 +7,8 @@ type ChainNodeStats struct {
 	Limits        uint           `json:"limits"`
 	ResponseStats map[int]uint64 `json:"response_stats"`
 	Priority      int            `json:"priority"`
+	Disabled      bool           `json:"disabled"`
+	Fails         uint           `json:"fails"`
 }
 
 type ChainStats struct {

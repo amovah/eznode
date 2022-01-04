@@ -20,6 +20,7 @@ type ChainNode struct {
 	priority       int
 	middleware     RequestMiddleware
 	disabled       bool
+	fails          uint
 }
 
 type ChainNodeData struct {

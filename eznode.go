@@ -57,7 +57,12 @@ func (e *EzNode) tryRequest(
 	defer cancelTimeout()
 
 	res, err := e.apiCaller.doRequest(ctx, createdRequest)
-	go collectMetric(selectedNode, res, err)
+	go collectMetric(
+		selectedNode,
+		res,
+		err,
+		isResponseValid(selectedChain.failureStatusCodes, res, err),
+	)
 	go releaseResource(selectedChain, selectedNode)
 
 	if isResponseValid(selectedChain.failureStatusCodes, res, err) {
@@ -117,7 +122,12 @@ func (e *EzNode) tryRequest(
 	return e.tryRequest(selectedChain, request, tryCount+1, excludeNodes, errorTrace)
 }
 
-func collectMetric(selectedNode *ChainNode, res *Response, err error) {
+func collectMetric(
+	selectedNode *ChainNode,
+	res *Response,
+	err error,
+	isFailed bool,
+) {
 	atomic.AddUint64(&selectedNode.totalHits, 1)
 
 	selectedNode.statsMutex.Lock()
@@ -131,6 +141,10 @@ func collectMetric(selectedNode *ChainNode, res *Response, err error) {
 		}
 	} else {
 		selectedNode.responseStats[res.StatusCode] += 1
+	}
+
+	if isFailed {
+		selectedNode.fails += 1
 	}
 }
 

@@ -16,6 +16,8 @@ func (c *Chain) getStats() []ChainNodeStats {
 			ResponseStats: node.responseStats,
 			Limits:        node.limit.Count,
 			Priority:      node.priority,
+			Disabled:      node.disabled,
+			Fails:         node.fails,
 		})
 		node.statsMutex.Unlock()
 	}
