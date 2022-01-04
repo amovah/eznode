@@ -9,19 +9,13 @@ func (c *Chain) disableNode(nodeName string) {
 	for _, node := range c.nodes {
 		if node.name == nodeName {
 			node.disabled = true
+			break
 		}
 	}
 }
 
 func (c *Chain) disableNodeWithTime(nodeName string, duration time.Duration) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
-	for _, node := range c.nodes {
-		if node.name == nodeName {
-			node.disabled = true
-		}
-	}
+	c.disableNode(nodeName)
 
 	time.AfterFunc(duration, func() {
 		c.enableNode(nodeName)
