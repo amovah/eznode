@@ -8,6 +8,8 @@ import (
 )
 
 func TestFindFreeNode(t *testing.T) {
+	t.Parallel()
+
 	chainNode1 := NewChainNode(ChainNodeData{
 		Name: "Node 1",
 		Url:  "http://example.com",
@@ -46,6 +48,8 @@ func TestFindFreeNode(t *testing.T) {
 }
 
 func TestNotFindNode(t *testing.T) {
+	t.Parallel()
+
 	chainNode1 := NewChainNode(ChainNodeData{
 		Name: "Node 1",
 		Url:  "http://example.com",
@@ -82,7 +86,95 @@ func TestNotFindNode(t *testing.T) {
 	assert.Nil(t, foundNode, "should not find node")
 }
 
+func TestDisableNode(t *testing.T) {
+	t.Parallel()
+
+	chainNode1 := NewChainNode(ChainNodeData{
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	createdChain := NewChain(
+		ChainData{
+			Id: "test-chain",
+			Nodes: []*ChainNode{
+				chainNode1,
+			},
+			CheckTickRate: CheckTick{
+				TickRate:         100 * time.Millisecond,
+				MaxCheckDuration: 200 * time.Millisecond,
+			},
+			RetryCount: 2,
+		},
+	)
+
+	createdChain.disableNode("Node 1")
+	foundNode := createdChain.getFreeNode(make(map[string]bool))
+
+	assert.Nil(t, foundNode, "should not find node")
+
+	createdChain.enableNode("Node 1")
+	foundNode = createdChain.getFreeNode(make(map[string]bool))
+
+	assert.NotNil(t, foundNode, "should not find node")
+}
+
+func TestDisableNodeWithTime(t *testing.T) {
+	t.Parallel()
+
+	chainNode1 := NewChainNode(ChainNodeData{
+		Name: "Node 1",
+		Url:  "http://example.com",
+		Limit: ChainNodeLimit{
+			Count: 10,
+			Per:   2 * time.Second,
+		},
+		RequestTimeout: 1 * time.Second,
+		Priority:       1,
+		Middleware: func(request *http.Request) *http.Request {
+			return request
+		},
+	})
+
+	createdChain := NewChain(
+		ChainData{
+			Id: "test-chain",
+			Nodes: []*ChainNode{
+				chainNode1,
+			},
+			CheckTickRate: CheckTick{
+				TickRate:         100 * time.Millisecond,
+				MaxCheckDuration: 200 * time.Millisecond,
+			},
+			RetryCount: 2,
+		},
+	)
+
+	createdChain.disableNodeWithTime("Node 1", 2*time.Second)
+	foundNode := createdChain.getFreeNode(make(map[string]bool))
+	assert.Nil(t, foundNode, "should not find node")
+
+	time.Sleep(1 * time.Second)
+	foundNode = createdChain.getFreeNode(make(map[string]bool))
+	assert.Nil(t, foundNode, "should not find node")
+
+	time.Sleep(1 * time.Second)
+	foundNode = createdChain.getFreeNode(make(map[string]bool))
+	assert.NotNil(t, foundNode, "should find node")
+}
+
 func TestLoadBalance(t *testing.T) {
+	t.Parallel()
+
 	chainNode1 := NewChainNode(ChainNodeData{
 		Name: "Node 1",
 		Url:  "http://example.com",

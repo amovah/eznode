@@ -21,6 +21,8 @@ func (m mockApiCall) doRequest(ctx context.Context, request *http.Request) (*Res
 }
 
 func TestCallRightRequest(t *testing.T) {
+	t.Parallel()
+
 	mockedApiCall := mockApiCall{
 		returnFunc: func(request *http.Request) (*Response, error) {
 			return &Response{
@@ -70,6 +72,8 @@ func TestCallRightRequest(t *testing.T) {
 }
 
 func TestRetry(t *testing.T) {
+	t.Parallel()
+
 	retryCount := 0
 	chainMaxTry := 2
 	seenUrls := make(map[string]bool)
@@ -152,6 +156,8 @@ func TestRetry(t *testing.T) {
 }
 
 func TestFailOnFailureStatusCodes(t *testing.T) {
+	t.Parallel()
+
 	retryCount := 0
 	chainMaxTry := 2
 
@@ -234,6 +240,8 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 }
 
 func TestNoMoreTryWhenCheckedAll(t *testing.T) {
+	t.Parallel()
+
 	retryCount := 0
 	chainMaxTry := 5
 
@@ -316,6 +324,8 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 }
 
 func TestLockAndReleaseResource(t *testing.T) {
+	t.Parallel()
+
 	mockedApiCall := mockApiCall{
 		returnFunc: func(request *http.Request) (*Response, error) {
 			return &Response{
@@ -378,6 +388,8 @@ func TestLockAndReleaseResource(t *testing.T) {
 }
 
 func TestConcurrentRequests(t *testing.T) {
+	t.Parallel()
+
 	mockedApiCall := mockApiCall{
 		returnFunc: func(request *http.Request) (*Response, error) {
 			time.Sleep(50 * time.Millisecond)

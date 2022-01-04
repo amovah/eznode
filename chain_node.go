@@ -19,6 +19,7 @@ type ChainNode struct {
 	statsMutex     *sync.Mutex
 	priority       int
 	middleware     RequestMiddleware
+	disabled       bool
 }
 
 type ChainNodeData struct {
@@ -84,5 +85,6 @@ func NewChainNode(
 		statsMutex:     &sync.Mutex{},
 		priority:       chainNodeData.Priority,
 		middleware:     middleware,
+		disabled:       false,
 	}
 }

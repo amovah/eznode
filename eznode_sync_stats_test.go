@@ -8,6 +8,8 @@ import (
 )
 
 func TestLoadWithEmptyStorageShouldBeEmpty(t *testing.T) {
+	t.Parallel()
+
 	chainNode1 := NewChainNode(ChainNodeData{
 		Name: "Node 1",
 		Url:  "http://example.com",
@@ -47,6 +49,8 @@ func TestLoadWithEmptyStorageShouldBeEmpty(t *testing.T) {
 }
 
 func TestShouldLoadCorrectly(t *testing.T) {
+	t.Parallel()
+
 	currentHit := uint(2)
 	totalHits := uint64(141)
 
@@ -110,6 +114,8 @@ func TestShouldLoadCorrectly(t *testing.T) {
 }
 
 func TestStartStopSyncStore(t *testing.T) {
+	t.Parallel()
+
 	saveCallCount := 0
 
 	chainNode1 := NewChainNode(ChainNodeData{

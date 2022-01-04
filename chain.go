@@ -138,7 +138,8 @@ func (c *Chain) findNode(excludeNodes map[string]bool) *ChainNode {
 		if !excludeNodes[node.name] &&
 			node.priority >= selectedNode.priority &&
 			node.hits < node.limit.Count &&
-			(node.hits <= selectedNode.hits || selectedNode.priority == -1) {
+			(node.hits <= selectedNode.hits || selectedNode.priority == -1) &&
+			!node.disabled {
 			selectedNode = node
 		}
 	}
