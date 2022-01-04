@@ -42,16 +42,16 @@ func NewChainNode(
 		log.Fatal(err)
 	}
 
-	if chainNodeData.Limit.Count <= 0 {
-		log.Fatal("limit.count cannot be less than 0")
+	if chainNodeData.Limit.Count < 1 {
+		log.Fatal("limit.count cannot be less than 1")
 	}
 
-	if chainNodeData.Limit.Per <= 0 {
-		log.Fatal("limit.per cannot be less than 0")
+	if chainNodeData.Limit.Per < 1 {
+		log.Fatal("limit.per cannot be less than 1")
 	}
 
-	if chainNodeData.RequestTimeout < 1*time.Second {
-		log.Fatal("requestTimeout cannot be less than 1 second")
+	if chainNodeData.RequestTimeout < 1 {
+		log.Fatal("requestTimeout cannot be less than 1")
 	}
 
 	if chainNodeData.Priority < 0 {

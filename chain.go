@@ -117,11 +117,10 @@ func (c *Chain) getFreeNode(excludeNodes map[string]bool) *ChainNode {
 		}
 	}()
 
-	go func() {
-		time.Sleep(c.checkTickRate.MaxCheckDuration)
+	time.AfterFunc(c.checkTickRate.MaxCheckDuration, func() {
 		ticker.Stop()
 		tickerDone <- true
-	}()
+	})
 
 	foundNode := <-foundNodeChannel
 	return foundNode
@@ -136,10 +135,11 @@ func (c *Chain) findNode(excludeNodes map[string]bool) *ChainNode {
 	}
 
 	for _, node := range c.nodes {
-		if !excludeNodes[node.name] && node.priority >= selectedNode.priority && node.hits < node.limit.Count {
-			if node.hits <= selectedNode.hits || selectedNode.priority == -1 {
-				selectedNode = node
-			}
+		if !excludeNodes[node.name] &&
+			node.priority >= selectedNode.priority &&
+			node.hits < node.limit.Count &&
+			(node.hits <= selectedNode.hits || selectedNode.priority == -1) {
+			selectedNode = node
 		}
 	}
 
