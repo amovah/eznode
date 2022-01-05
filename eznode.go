@@ -126,7 +126,7 @@ func collectMetric(
 	selectedNode *ChainNode,
 	res *Response,
 	err error,
-	isFailed bool,
+	isValid bool,
 ) {
 	atomic.AddUint64(&selectedNode.totalHits, 1)
 
@@ -143,7 +143,7 @@ func collectMetric(
 		selectedNode.responseStats[res.StatusCode] += 1
 	}
 
-	if isFailed {
+	if !isValid {
 		selectedNode.fails += 1
 	}
 }
