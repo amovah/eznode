@@ -7,13 +7,20 @@ import (
 	"time"
 )
 
+// Response is the response from an API call (eznode final result)
 type Response struct {
+	// StatusCode is the HTTP status code of the response
 	StatusCode int
-	Body       []byte
-	Headers    *http.Header
-	Metadata   ChainResponseMetadata
+	// Body is the response body
+	Body []byte
+	// Headers is the response headers
+	Headers *http.Header
+	// Metadata is the response metadata, it includes trace of request which it takes to get the response
+	// also it includes the error and which node it was sent to
+	Metadata ChainResponseMetadata
 }
 
+// ApiCaller is the interface for making API calls
 type ApiCaller interface {
 	doRequest(context context.Context, request *http.Request) (*Response, error)
 }

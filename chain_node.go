@@ -23,15 +23,24 @@ type ChainNode struct {
 	fails          uint
 }
 
+// ChainNodeData is parameter to pass to NewChainNode function
 type ChainNodeData struct {
-	Name           string
-	Url            string
-	Limit          ChainNodeLimit
+	// Name of the node
+	Name string
+	// Url of the node
+	Url string
+	// Limit of the node
+	Limit ChainNodeLimit
+	// Timeout of a request, if a request timeout, another node will be used
 	RequestTimeout time.Duration
-	Priority       int
-	Middleware     RequestMiddleware
+	// Priority of the node, higher priority will be used first
+	Priority int
+	// Middleware will be used before sending request to the node
+	// you can set up authentication middleware, etc
+	Middleware RequestMiddleware
 }
 
+// NewChainNode creates a new ChainNode based on the given ChainNodeData
 func NewChainNode(
 	chainNodeData ChainNodeData,
 ) *ChainNode {
