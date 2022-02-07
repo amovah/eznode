@@ -15,7 +15,7 @@ type mockApiCall struct {
 	validateFunc func(*http.Request)
 }
 
-func (m mockApiCall) doRequest(ctx context.Context, request *http.Request) (*Response, error) {
+func (m mockApiCall) DoRequest(ctx context.Context, request *http.Request) (*Response, error) {
 	m.validateFunc(request)
 	return m.returnFunc(request)
 }

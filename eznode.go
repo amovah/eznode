@@ -56,7 +56,7 @@ func (e *EzNode) tryRequest(
 	ctx, cancelTimeout := context.WithTimeout(context.Background(), selectedNode.requestTimeout)
 	defer cancelTimeout()
 
-	res, err := e.apiCaller.doRequest(ctx, createdRequest)
+	res, err := e.apiCaller.DoRequest(ctx, createdRequest)
 	go collectMetric(
 		selectedNode,
 		res,

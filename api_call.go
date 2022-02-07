@@ -22,14 +22,14 @@ type Response struct {
 
 // ApiCaller is the interface for making API calls
 type ApiCaller interface {
-	doRequest(context context.Context, request *http.Request) (*Response, error)
+	DoRequest(context context.Context, request *http.Request) (*Response, error)
 }
 
 type apiCallerClient struct {
 	client *http.Client
 }
 
-func (a *apiCallerClient) doRequest(ctx context.Context, request *http.Request) (*Response, error) {
+func (a *apiCallerClient) DoRequest(ctx context.Context, request *http.Request) (*Response, error) {
 	res, err := a.client.Do(request.WithContext(ctx))
 	if err != nil {
 		return nil, err
