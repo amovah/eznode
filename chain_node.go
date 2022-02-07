@@ -23,8 +23,8 @@ type ChainNode struct {
 	fails          uint
 }
 
-// ChainNodeData is parameter to pass to NewChainNode function
-type ChainNodeData struct {
+// NewChainParam is parameter to pass to NewChainNode function
+type NewChainParam struct {
 	// Name of the node
 	Name string
 	// Url of the node
@@ -37,12 +37,13 @@ type ChainNodeData struct {
 	Priority int
 	// Middleware will be used before sending request to the node
 	// you can set up authentication middleware, etc
+	// Middleware is optional
 	Middleware RequestMiddleware
 }
 
-// NewChainNode creates a new ChainNode based on the given ChainNodeData
+// NewChainNode creates a new ChainNode based on the given NewChainParam
 func NewChainNode(
-	chainNodeData ChainNodeData,
+	chainNodeData NewChainParam,
 ) *ChainNode {
 	if chainNodeData.Name == "" {
 		log.Fatal("name cannot be empty")

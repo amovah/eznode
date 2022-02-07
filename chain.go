@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// RequestMiddleware is a function that is called before the request is processed.
 type RequestMiddleware func(*http.Request) *http.Request
 
 type Chain struct {
@@ -26,16 +27,23 @@ func createMiddleware(chainNode *ChainNode) RequestMiddleware {
 	}
 }
 
-type ChainData struct {
-	Id                 string
-	Nodes              []*ChainNode
-	CheckTickRate      CheckTick
+type NewChainParams struct {
+	// Id of the chain
+	Id string
+	// List of nodes in the chain
+	Nodes []*ChainNode
+	// tick rate for checking nodes availability
+	CheckTickRate CheckTick
+	// list of http status codes which recognized as failure
 	FailureStatusCodes []int
-	RetryCount         int
+	// number of retries for failed requests
+	RetryCount int
 }
 
+// NewChain creates new Chain
+// If FailureStatusCodes is not specified, default list of status codes is used
 func NewChain(
-	chainData ChainData,
+	chainData NewChainParams,
 ) *Chain {
 	if chainData.Id == "" {
 		log.Fatal("id cannot be empty")

@@ -1,5 +1,6 @@
 package eznode
 
+// ChainNodeStats is the stats of a chain node
 type ChainNodeStats struct {
 	Name          string         `json:"name"`
 	CurrentHits   uint           `json:"current_hits"`
@@ -11,6 +12,7 @@ type ChainNodeStats struct {
 	Fails         uint           `json:"fails"`
 }
 
+// ChainStats is the stats of a chain
 type ChainStats struct {
 	Id    string           `json:"id"`
 	Nodes []ChainNodeStats `json:"nodes"`

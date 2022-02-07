@@ -37,7 +37,7 @@ func TestCallRightRequest(t *testing.T) {
 		},
 	}
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -52,7 +52,7 @@ func TestCallRightRequest(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -90,7 +90,7 @@ func TestRetry(t *testing.T) {
 		},
 	}
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -104,7 +104,7 @@ func TestRetry(t *testing.T) {
 		},
 	})
 
-	chainNode2 := NewChainNode(ChainNodeData{
+	chainNode2 := NewChainNode(NewChainParam{
 		Name: "Node 2",
 		Url:  "http://example2.com",
 		Limit: ChainNodeLimit{
@@ -118,7 +118,7 @@ func TestRetry(t *testing.T) {
 		},
 	})
 
-	chainNode3 := NewChainNode(ChainNodeData{
+	chainNode3 := NewChainNode(NewChainParam{
 		Name: "Node 3",
 		Url:  "http://example3.com",
 		Limit: ChainNodeLimit{
@@ -133,7 +133,7 @@ func TestRetry(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -174,7 +174,7 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 		},
 	}
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -188,7 +188,7 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 		},
 	})
 
-	chainNode2 := NewChainNode(ChainNodeData{
+	chainNode2 := NewChainNode(NewChainParam{
 		Name: "Node 2",
 		Url:  "http://example2.com",
 		Limit: ChainNodeLimit{
@@ -202,7 +202,7 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 		},
 	})
 
-	chainNode3 := NewChainNode(ChainNodeData{
+	chainNode3 := NewChainNode(NewChainParam{
 		Name: "Node 3",
 		Url:  "http://example3.com",
 		Limit: ChainNodeLimit{
@@ -217,7 +217,7 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -258,7 +258,7 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 		},
 	}
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -272,7 +272,7 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 		},
 	})
 
-	chainNode2 := NewChainNode(ChainNodeData{
+	chainNode2 := NewChainNode(NewChainParam{
 		Name: "Node 2",
 		Url:  "http://example2.com",
 		Limit: ChainNodeLimit{
@@ -286,7 +286,7 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 		},
 	})
 
-	chainNode3 := NewChainNode(ChainNodeData{
+	chainNode3 := NewChainNode(NewChainParam{
 		Name: "Node 3",
 		Url:  "http://example3.com",
 		Limit: ChainNodeLimit{
@@ -301,7 +301,7 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -338,7 +338,7 @@ func TestLockAndReleaseResource(t *testing.T) {
 		},
 	}
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -353,7 +353,7 @@ func TestLockAndReleaseResource(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -403,7 +403,7 @@ func TestConcurrentRequests(t *testing.T) {
 		},
 	}
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -417,7 +417,7 @@ func TestConcurrentRequests(t *testing.T) {
 		},
 	})
 
-	chainNode2 := NewChainNode(ChainNodeData{
+	chainNode2 := NewChainNode(NewChainParam{
 		Name: "Node 2",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -431,7 +431,7 @@ func TestConcurrentRequests(t *testing.T) {
 		},
 	})
 
-	chainNode3 := NewChainNode(ChainNodeData{
+	chainNode3 := NewChainNode(NewChainParam{
 		Name: "Node 3",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -446,7 +446,7 @@ func TestConcurrentRequests(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,

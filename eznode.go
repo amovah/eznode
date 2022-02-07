@@ -16,6 +16,9 @@ type EzNode struct {
 	syncStorage syncStorage
 }
 
+// SendRequest send your request to specific chain
+// If chain not found, return error
+// Note: make sure which your request should not have host, schema and port
 func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, error) {
 	selectedChain := e.chains[chainId]
 	if selectedChain == nil {

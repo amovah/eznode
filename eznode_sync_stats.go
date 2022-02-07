@@ -6,6 +6,8 @@ import (
 
 type StatsSyncer func([]ChainStats)
 
+// StartSyncStats runs a function in interval
+// this mechanism is used for syncing stats data for any storage or whatever you want
 func (e *EzNode) StartSyncStats(syncer StatsSyncer) {
 	e.syncStorage.mutex.Lock()
 	defer e.syncStorage.mutex.Unlock()
@@ -30,6 +32,7 @@ func (e *EzNode) StartSyncStats(syncer StatsSyncer) {
 	}
 }
 
+// StopSyncStats stops calling the function which passed to StartSyncStats
 func (e *EzNode) StopSyncStats() {
 	e.syncStorage.mutex.Lock()
 	defer e.syncStorage.mutex.Unlock()
@@ -41,6 +44,7 @@ func (e *EzNode) StopSyncStats() {
 	}
 }
 
+// LoadStats loads stats and sync stats to eznode core
 func (e *EzNode) LoadStats(loadedStats []ChainStats) {
 	loadedStatsMap := make(map[string]map[string]ChainNodeStats)
 	for _, stat := range loadedStats {

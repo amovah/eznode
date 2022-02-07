@@ -26,6 +26,7 @@ func (c *Chain) getStats() []ChainNodeStats {
 	return nodeStats
 }
 
+// GetStats returns the stats of chains
 func (e *EzNode) GetStats() []ChainStats {
 	chainStats := make([]ChainStats, 0)
 

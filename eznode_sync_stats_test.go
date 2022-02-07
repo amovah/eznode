@@ -10,7 +10,7 @@ import (
 func TestLoadWithEmptyStorageShouldBeEmpty(t *testing.T) {
 	t.Parallel()
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -22,7 +22,7 @@ func TestLoadWithEmptyStorageShouldBeEmpty(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -54,7 +54,7 @@ func TestShouldLoadCorrectly(t *testing.T) {
 	currentHit := uint(2)
 	totalHits := uint64(141)
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -69,7 +69,7 @@ func TestShouldLoadCorrectly(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -118,7 +118,7 @@ func TestStartStopSyncStore(t *testing.T) {
 
 	saveCallCount := 0
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -133,7 +133,7 @@ func TestStartStopSyncStore(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,

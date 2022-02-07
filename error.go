@@ -2,8 +2,11 @@ package eznode
 
 import "fmt"
 
+// EzNodeError is the error type for EzNode
 type EzNodeError struct {
-	Message  string
+	// Message is the error message
+	Message string
+	// Metadata is the error metadata
 	Metadata ChainResponseMetadata
 }
 

@@ -2,6 +2,7 @@ package eznode
 
 import "net/http"
 
+// DefaultFailureStatusCodes is the default http status code which recognized as failure
 var DefaultFailureStatusCodes = []int{
 	http.StatusGone,
 	http.StatusUnauthorized,

@@ -10,7 +10,7 @@ import (
 func TestFindFreeNode(t *testing.T) {
 	t.Parallel()
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -25,7 +25,7 @@ func TestFindFreeNode(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -50,7 +50,7 @@ func TestFindFreeNode(t *testing.T) {
 func TestNotFindNode(t *testing.T) {
 	t.Parallel()
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -65,7 +65,7 @@ func TestNotFindNode(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -89,7 +89,7 @@ func TestNotFindNode(t *testing.T) {
 func TestDisableNode(t *testing.T) {
 	t.Parallel()
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -104,7 +104,7 @@ func TestDisableNode(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -131,7 +131,7 @@ func TestDisableNode(t *testing.T) {
 func TestDisableNodeWithTime(t *testing.T) {
 	t.Parallel()
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -146,7 +146,7 @@ func TestDisableNodeWithTime(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test-chain",
 			Nodes: []*ChainNode{
 				chainNode1,
@@ -175,7 +175,7 @@ func TestDisableNodeWithTime(t *testing.T) {
 func TestLoadBalance(t *testing.T) {
 	t.Parallel()
 
-	chainNode1 := NewChainNode(ChainNodeData{
+	chainNode1 := NewChainNode(NewChainParam{
 		Name: "Node 1",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -189,7 +189,7 @@ func TestLoadBalance(t *testing.T) {
 		},
 	})
 
-	chainNode2 := NewChainNode(ChainNodeData{
+	chainNode2 := NewChainNode(NewChainParam{
 		Name: "Node 2",
 		Url:  "http://example.com",
 		Limit: ChainNodeLimit{
@@ -204,7 +204,7 @@ func TestLoadBalance(t *testing.T) {
 	})
 
 	createdChain := NewChain(
-		ChainData{
+		NewChainParams{
 			Id: "test chain",
 			Nodes: []*ChainNode{
 				chainNode1,

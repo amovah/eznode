@@ -6,8 +6,10 @@ import (
 	"time"
 )
 
+// Option is a functional parameter for NewEzNode
 type Option func(*EzNode)
 
+// NewEzNode creates a new EzNode
 func NewEzNode(chains []*Chain, options ...Option) *EzNode {
 	chainHashMap := make(map[string]*Chain)
 	for _, userChain := range chains {
@@ -35,12 +37,14 @@ func NewEzNode(chains []*Chain, options ...Option) *EzNode {
 	return ezNode
 }
 
+// WithApiClient sets the api client
 func WithApiClient(apiCaller ApiCaller) Option {
 	return func(ezNode *EzNode) {
 		ezNode.apiCaller = apiCaller
 	}
 }
 
+// WithSyncInterval sets the sync interval for calling sync stats function
 func WithSyncInterval(
 	interval time.Duration,
 ) Option {
