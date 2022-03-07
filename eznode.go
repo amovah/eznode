@@ -25,9 +25,29 @@ func (e *EzNode) SendRequest(chainId string, request *http.Request) (*Response, 
 		return nil, errors.New(fmt.Sprintf("cannot find chain id %s", chainId))
 	}
 
+	includeNodes := make(map[string]bool)
 	excludeNodes := make(map[string]bool)
 	errorTrace := make([]NodeTrace, 0)
-	return e.tryRequest(selectedChain, request, 0, excludeNodes, errorTrace)
+	return e.tryRequest(selectedChain, request, 0, excludeNodes, includeNodes, errorTrace)
+}
+
+// SendRequestSpecific send your request with specifying which node you want to use
+// if your node rely on specific node (usually node which has more history) you can use
+// this function to ensure your request will be responded by this node
+func (e *EzNode) SendRequestSpecific(chainId string, request *http.Request, includeNodeList []string) (*Response, error) {
+	selectedChain := e.chains[chainId]
+	if selectedChain == nil {
+		return nil, errors.New(fmt.Sprintf("cannot find chain id %s", chainId))
+	}
+
+	includeNodes := make(map[string]bool)
+	for _, includeNode := range includeNodeList {
+		includeNodes[includeNode] = true
+	}
+
+	excludeNodes := make(map[string]bool)
+	errorTrace := make([]NodeTrace, 0)
+	return e.tryRequest(selectedChain, request, 0, excludeNodes, includeNodes, errorTrace)
 }
 
 func (e *EzNode) tryRequest(
@@ -35,9 +55,10 @@ func (e *EzNode) tryRequest(
 	request *http.Request,
 	tryCount int,
 	excludeNodes map[string]bool,
+	includeNodes map[string]bool,
 	errorTrace []NodeTrace,
 ) (*Response, error) {
-	selectedNode := selectedChain.getFreeNode(excludeNodes)
+	selectedNode := selectedChain.getFreeNode(excludeNodes, includeNodes)
 	if selectedNode == nil {
 		errorMessage := fmt.Sprintf("'%s' chain is at full capacity", selectedChain.id)
 		return nil, EzNodeError{
@@ -122,7 +143,7 @@ func (e *EzNode) tryRequest(
 	}
 
 	excludeNodes[selectedNode.name] = true
-	return e.tryRequest(selectedChain, request, tryCount+1, excludeNodes, errorTrace)
+	return e.tryRequest(selectedChain, request, tryCount+1, excludeNodes, includeNodes, errorTrace)
 }
 
 func collectMetric(

@@ -96,12 +96,12 @@ func NewChain(
 	}
 }
 
-func (c *Chain) getFreeNode(excludeNodes map[string]bool) *ChainNode {
+func (c *Chain) getFreeNode(excludeNodes map[string]bool, includeNodes map[string]bool) *ChainNode {
 	if len(excludeNodes) == len(c.nodes) {
 		return nil
 	}
 
-	firstLoadNode := c.findNode(excludeNodes)
+	firstLoadNode := c.findNode(excludeNodes, includeNodes)
 	if firstLoadNode != nil {
 		return firstLoadNode
 	}
@@ -116,7 +116,7 @@ func (c *Chain) getFreeNode(excludeNodes map[string]bool) *ChainNode {
 				foundNodeChannel <- nil
 				return
 			case <-ticker.C:
-				foundNode := c.findNode(excludeNodes)
+				foundNode := c.findNode(excludeNodes, includeNodes)
 				if foundNode != nil {
 					foundNodeChannel <- foundNode
 					return
@@ -134,7 +134,7 @@ func (c *Chain) getFreeNode(excludeNodes map[string]bool) *ChainNode {
 	return foundNode
 }
 
-func (c *Chain) findNode(excludeNodes map[string]bool) *ChainNode {
+func (c *Chain) findNode(excludeNodes map[string]bool, includeNodes map[string]bool) *ChainNode {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -144,6 +144,7 @@ func (c *Chain) findNode(excludeNodes map[string]bool) *ChainNode {
 
 	for _, node := range c.nodes {
 		if !excludeNodes[node.name] &&
+			((len(includeNodes) > 0 && includeNodes[node.name]) || len(includeNodes) == 0) &&
 			node.priority >= selectedNode.priority &&
 			node.hits < node.limit.Count &&
 			(node.hits <= selectedNode.hits || selectedNode.priority == -1) &&
