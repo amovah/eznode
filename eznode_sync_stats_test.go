@@ -1,10 +1,11 @@
 package eznode
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLoadWithEmptyStorageShouldBeEmpty(t *testing.T) {
@@ -111,57 +112,4 @@ func TestShouldLoadCorrectly(t *testing.T) {
 	assert.Equal(t, totalHits, ezNode.chains["test-chain"].nodes[0].totalHits)
 	assert.Equal(t, uint64(10), ezNode.chains["test-chain"].nodes[0].responseStats[0])
 	assert.Equal(t, uint64(5), ezNode.chains["test-chain"].nodes[0].responseStats[200])
-}
-
-func TestStartStopSyncStore(t *testing.T) {
-	t.Parallel()
-
-	saveCallCount := 0
-
-	chainNode1 := NewChainNode(NewChainParam{
-		Name: "Node 1",
-		Url:  "http://example.com",
-		Limit: ChainNodeLimit{
-			Count: 1,
-			Per:   2 * time.Second,
-		},
-		RequestTimeout: 1 * time.Second,
-		Priority:       1,
-		Middleware: func(request *http.Request) *http.Request {
-			return request
-		},
-	})
-
-	createdChain := NewChain(
-		NewChainParams{
-			Id: "test-chain",
-			Nodes: []*ChainNode{
-				chainNode1,
-			},
-			CheckTickRate: CheckTick{
-				TickRate:         100 * time.Millisecond,
-				MaxCheckDuration: 200 * time.Millisecond,
-			},
-			FailureStatusCodes: []int{},
-			RetryCount:         2,
-		},
-	)
-
-	ezNode := NewEzNode(
-		[]*Chain{
-			createdChain,
-		},
-		WithSyncInterval(
-			500*time.Millisecond,
-		),
-	)
-
-	ezNode.StartSyncStats(func(chainStats []ChainStats) {
-		saveCallCount += 1
-	})
-	time.Sleep(2000 * time.Millisecond)
-	ezNode.StopSyncStats()
-	assert.Equal(t, 4, saveCallCount)
-	time.Sleep(2 * time.Second)
-	assert.Equal(t, 4, saveCallCount)
 }

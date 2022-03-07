@@ -20,7 +20,6 @@ face rate limit if you request more than nodes can handle).
 * Disable/Enable Nodes
 * Prioritize Nodes
 * Node Performance Statistics
-* Stats Sync System
 
 ## Usage
 
