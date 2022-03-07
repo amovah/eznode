@@ -27,7 +27,7 @@ func createMiddleware(chainNode *ChainNode) RequestMiddleware {
 	}
 }
 
-type NewChainParams struct {
+type NewChainConfig struct {
 	// Id of the chain
 	Id string
 	// List of nodes in the chain
@@ -43,7 +43,7 @@ type NewChainParams struct {
 // NewChain creates new Chain
 // If FailureStatusCodes is not specified, default list of status codes is used
 func NewChain(
-	chainData NewChainParams,
+	chainData NewChainConfig,
 ) *Chain {
 	if chainData.Id == "" {
 		log.Fatal("id cannot be empty")

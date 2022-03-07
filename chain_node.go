@@ -23,8 +23,8 @@ type ChainNode struct {
 	fails          uint
 }
 
-// NewChainParam is parameter to pass to NewChainNode function
-type NewChainParam struct {
+// NewChainNodeConfig is parameter to pass to NewChainNode function
+type NewChainNodeConfig struct {
 	// Name of the node
 	Name string
 	// Url of the node
@@ -43,7 +43,7 @@ type NewChainParam struct {
 
 // NewChainNode creates a new ChainNode based on the given NewChainParam
 func NewChainNode(
-	chainNodeData NewChainParam,
+	chainNodeData NewChainNodeConfig,
 ) *ChainNode {
 	if chainNodeData.Name == "" {
 		log.Fatal("name cannot be empty")
