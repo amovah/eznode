@@ -19,4 +19,5 @@ var DefaultFailureStatusCodes = []int{
 	http.StatusLoopDetected,
 	http.StatusNotExtended,
 	http.StatusNetworkAuthenticationRequired,
+	http.StatusPaymentRequired,
 }
