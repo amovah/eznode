@@ -1,9 +1,12 @@
 package eznode
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"sync/atomic"
@@ -76,7 +79,25 @@ func (e *EzNode) tryRequest(
 		}
 	}
 
+	originalBody, err := ioutil.ReadAll(request.Body)
+	if err != nil {
+		return &Response{}, EzNodeError{
+			Message: "cannot clone request",
+			Metadata: ChainResponseMetadata{
+				ChainId:      selectedChain.id,
+				RequestedUrl: request.URL.String(),
+				Retry:        tryCount,
+				Trace: append(errorTrace, NodeTrace{
+					StatusCode: http.StatusInternalServerError,
+					Err:        errors.New("cannot clone request"),
+				}),
+			},
+		}
+	}
+	request.Body = io.NopCloser(bytes.NewBuffer(originalBody))
+
 	createdRequest := selectedNode.middleware(request.Clone(context.Background()))
+	createdRequest.Body = io.NopCloser(bytes.NewBuffer(originalBody))
 	ctx, cancelTimeout := context.WithTimeout(context.Background(), selectedNode.requestTimeout)
 	defer cancelTimeout()
 
