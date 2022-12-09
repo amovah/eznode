@@ -14,12 +14,12 @@ face rate limit if you request more than nodes can handle).
 
 ## Features
 
-* Load Balance
-* Failed Request Recovery
-* Node Request Rate Limit
-* Disable/Enable Nodes
-* Prioritize Nodes
-* Node Performance Statistics
+- Load Balance
+- Failed Request Recovery
+- Node Request Rate Limit
+- Disable/Enable Nodes
+- Prioritize Nodes
+- Node Performance Statistics
 
 ## Usage
 
@@ -94,4 +94,4 @@ func main() {
 
 ## LICENSE
 
-Apache License Version 2.0
+MIT
