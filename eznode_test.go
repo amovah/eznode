@@ -69,7 +69,7 @@ func TestCallRightRequest(t *testing.T) {
 
 	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 	request, _ := http.NewRequest("GET", "/", nil)
-	ezNode.SendRequest("test-chain", request)
+	ezNode.SendRequest(context.Background(), "test-chain", request)
 }
 
 func TestRetry(t *testing.T) {
@@ -152,7 +152,7 @@ func TestRetry(t *testing.T) {
 
 	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 	request, _ := http.NewRequest("GET", "/", nil)
-	ezNode.SendRequest("test-chain", request)
+	ezNode.SendRequest(context.Background(), "test-chain", request)
 	assert.Equal(t, chainMaxTry+1, retryCount)
 }
 
@@ -236,7 +236,7 @@ func TestFailOnFailureStatusCodes(t *testing.T) {
 
 	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 	request, _ := http.NewRequest("GET", "/", nil)
-	ezNode.SendRequest("test-chain", request)
+	ezNode.SendRequest(context.Background(), "test-chain", request)
 	assert.Equal(t, chainMaxTry+1, retryCount)
 }
 
@@ -320,7 +320,7 @@ func TestNoMoreTryWhenCheckedAll(t *testing.T) {
 
 	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 	request, _ := http.NewRequest("GET", "/", nil)
-	ezNode.SendRequest("test-chain", request)
+	ezNode.SendRequest(context.Background(), "test-chain", request)
 	assert.Equal(t, 3, retryCount)
 }
 
@@ -371,18 +371,18 @@ func TestLockAndReleaseResource(t *testing.T) {
 	ezNode := NewEzNode([]*Chain{createdChain}, WithApiClient(mockedApiCall))
 
 	request, _ := http.NewRequest("GET", "/", nil)
-	res, err := ezNode.SendRequest("test-chain", request)
+	res, err := ezNode.SendRequest(context.Background(), "test-chain", request)
 	assert.Nil(t, err)
 	assert.Equal(t, 200, res.StatusCode)
 	assert.Equal(t, uint(1), ezNode.chains["test-chain"].nodes[0].hits)
 
-	res, err = ezNode.SendRequest("test-chain", request)
+	res, err = ezNode.SendRequest(context.Background(), "test-chain", request)
 	assert.NotNil(t, err)
 	assert.Equal(t, uint(1), ezNode.chains["test-chain"].nodes[0].hits)
 
 	time.Sleep(2 * time.Second)
 	assert.Equal(t, uint(0), ezNode.chains["test-chain"].nodes[0].hits)
-	res, err = ezNode.SendRequest("test-chain", request)
+	res, err = ezNode.SendRequest(context.Background(), "test-chain", request)
 	assert.Nil(t, err)
 	assert.Equal(t, 200, res.StatusCode)
 	assert.Equal(t, uint(1), ezNode.chains["test-chain"].nodes[0].hits)
@@ -468,18 +468,18 @@ func TestConcurrentRequests(t *testing.T) {
 
 	w := &sync.WaitGroup{}
 	for i := 0; i < 100; i++ {
+		w.Add(1)
 		go func() {
-			w.Add(1)
-			ezNode.SendRequest("test-chain", request)
+			ezNode.SendRequest(context.Background(), "test-chain", request)
 			w.Done()
 		}()
 	}
 	w.Wait()
 
 	for i := 0; i < 100; i++ {
+		w.Add(1)
 		go func() {
-			w.Add(1)
-			ezNode.SendRequest("test-chain", request)
+			ezNode.SendRequest(context.Background(), "test-chain", request)
 			w.Done()
 		}()
 	}

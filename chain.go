@@ -19,14 +19,6 @@ type Chain struct {
 	retryCount         int
 }
 
-func createMiddleware(chainNode *ChainNode) RequestMiddleware {
-	mainMiddleware := chainNode.middleware
-
-	return func(request *http.Request) *http.Request {
-		return mainMiddleware(request)
-	}
-}
-
 type NewChainConfig struct {
 	// Id of the chain
 	Id string
@@ -81,18 +73,13 @@ func NewChain(
 		}
 	}
 
-	nodes := chainData.Nodes
-	for _, node := range nodes {
-		node.middleware = createMiddleware(node)
-	}
-
 	return &Chain{
 		id:                 chainData.Id,
 		mutex:              &sync.RWMutex{},
 		checkTickRate:      chainData.CheckTickRate,
 		failureStatusCodes: failureStatusCodes,
 		retryCount:         chainData.RetryCount,
-		nodes:              nodes,
+		nodes:              chainData.Nodes,
 	}
 }
 
@@ -106,32 +93,20 @@ func (c *Chain) getFreeNode(excludeNodes map[string]bool, includeNodes map[strin
 		return firstLoadNode
 	}
 
+	deadlineToFind := time.After(c.checkTickRate.MaxCheckDuration)
 	ticker := time.NewTicker(c.checkTickRate.TickRate)
-	foundNodeChannel := make(chan *ChainNode)
-	tickerDone := make(chan bool)
-	go func() {
-		for {
-			select {
-			case <-tickerDone:
-				foundNodeChannel <- nil
-				return
-			case <-ticker.C:
-				foundNode := c.findNode(excludeNodes, includeNodes)
-				if foundNode != nil {
-					foundNodeChannel <- foundNode
-					return
-				}
+
+	for {
+		select {
+		case <-deadlineToFind:
+			return nil
+		case <-ticker.C:
+			foundNode := c.findNode(excludeNodes, includeNodes)
+			if foundNode != nil {
+				return foundNode
 			}
 		}
-	}()
-
-	time.AfterFunc(c.checkTickRate.MaxCheckDuration, func() {
-		ticker.Stop()
-		tickerDone <- true
-	})
-
-	foundNode := <-foundNodeChannel
-	return foundNode
+	}
 }
 
 func (c *Chain) findNode(excludeNodes map[string]bool, includeNodes map[string]bool) *ChainNode {
