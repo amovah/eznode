@@ -119,7 +119,12 @@ func (e *EzNode) SendRequestSpecific(ctx context.Context, chainId string, reques
 			return res, nil
 		}
 
-		nodeTrace = append(nodeTrace, generateTrace(selectedNode.name, err, res.StatusCode))
+		resStatusCode := 0
+		if res != nil {
+			resStatusCode = res.StatusCode
+		}
+
+		nodeTrace = append(nodeTrace, generateTrace(selectedNode.name, err, resStatusCode))
 		excludeNodes[selectedNode.name] = true
 	}
 
